@@ -34,7 +34,7 @@ IMPROVEMENTS:
 
   - Changed the name of the private functions and private variables.（プライベート関数とプライベート変数の名前を変更。）
 
-## 0.2.0 (unreleased)
+## 0.2.0 (April 4, 2014)
 
 FEATURES:
 
