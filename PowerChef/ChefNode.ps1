@@ -364,9 +364,9 @@ function New-ChefNode
         [Parameter(Mandatory = $true, Position = 1)]
         [string]
         [ValidateNotNull()]
-        [ValidateSet("Windows") ]
+        [ValidateSet("Windows", "Linux") ]
         $OSType,
-        
+
         [Parameter(Mandatory = $true, Position = 2)]
         [int]
         [ValidateNotNull()]
@@ -393,7 +393,7 @@ function New-ChefNode
 
     [string]$NodeName =  "$NodeNamePrefix-192-168-56-$VMnumber"
     [string]$nodeFolderPath = "$PWD\nodes\$Environment\$NodeName"
-    [string]$vagrantfileContent = @"
+    [string]$vagrantfileContentForWindows = @"
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
@@ -410,6 +410,20 @@ Vagrant.configure('2') do |config|
   config.vm.network :forwarded_port, guest: 5985, host: $($VMNumber + 50000), id: "winrm", auto_correct: true
 end
 "@
+    [string]$vagrantfileContentforLinux = @"
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure('2') do |config|
+  config.vm.define '$NodeName' do |node|
+    node.vm.box = '$BoxName'
+    node.vm.network 'private_network', ip: '192.168.56.$VMNumber'
+    node.vm.provider :virtualbox do |vb|
+      vb.name = '$NodeName'
+    end
+  end
+end
+"@
     [string]$RakefileContent =@"
 require 'rake'
 require 'rspec/core/rake_task'
@@ -420,7 +434,17 @@ end
 "@
 
     Info "Creation of the 'Chef Node' definition is starting.`n（'Chef Node'　の定義の作製を開始します。）"
-    New-File -Path "$nodeFolderPath\Vagrantfile" -Value "$vagrantfileContent"
+    switch($OSType)
+    {
+        "Windows"
+        {
+            New-File -Path "$nodeFolderPath\Vagrantfile" -Value "$vagrantfileContentForWindows"
+        }
+        "Linux"
+        {
+            New-File -Path "$nodeFolderPath\Vagrantfile" -Value "$vagrantfileContentForLinux"
+        }
+    }
     New-File -Path "$nodeFolderPath\Rakefile" -Value "$RakefileContent"
     New-ChefNodeSpecFile -NodeName "$NodeName" -IPAddress "192.168.56.$VMNumber" -Environment "$Environment" -SpecFileName "default_spec.rb"
     & "tree.com " /f "$nodeFolderPath"
@@ -1167,13 +1191,13 @@ environment '$Environment'
         Error "Connection to the following machine is failed.`n（下記マシンとの接続に失敗しました。）`n`nNode name: $NodeName`nIP address: $IPAddress`n`n$Error"
     }
     Info "Connection to the following machine has finished successfully.`n（下記マシンとの接続が正常に完了しました。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-        
+
     Info "Downloading a installer of 'Chef' on the following machine.`n（下記マシン上で　'Chef'　のインストーラーをダウンロードしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-    Invoke-Command -Session $PSSession -ScriptBlock {(New-Object System.Net.WebClient).DownloadFile("https://www.opscode.com/chef/install.msi", "$env:TEMP\Chef.msi")} 
+    Invoke-Command -Session $PSSession -ScriptBlock {(New-Object System.Net.WebClient).DownloadFile("https://www.opscode.com/chef/install.msi", "$env:TEMP\Chef.msi")}
 
     Info "Installing 'Chef' on the following machine.`n（下記マシン上で　'Chef'　をインストールしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-    Invoke-Command -Session $PSSession -ScriptBlock {Start-Process -FilePath "msiexec.exe" -ArgumentList "/package $env:TEMP\Chef.msi /passive" -Verb "runas" -Wait} 
-    Invoke-Command -Session $PSSession -ScriptBlock {$env:Path = "C:\opscode\chef\bin;$env:Path"} 
+    Invoke-Command -Session $PSSession -ScriptBlock {Start-Process -FilePath "msiexec.exe" -ArgumentList "/package $env:TEMP\Chef.msi /passive" -Verb "runas" -Wait}
+    Invoke-Command -Session $PSSession -ScriptBlock {$env:Path = "C:\opscode\chef\bin;$env:Path"}
 
     Info "Creating 'C:\chef\client.rb' on the following machine.`n（下記マシン上で　'C:\chef\client.rb' を作成しています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
     Invoke-Command -Session $PSSession -ScriptBlock {& knife.bat configure client -s "http://192.168.56.1:8889" "C:\chef\"}
@@ -1186,7 +1210,7 @@ environment '$Environment'
 
     Info "Registering as 'Chef Node' on the following machine.`n（下記マシン上で　'Chef Node'　の登録を行っています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
     Invoke-Command -Session $PSSession -ScriptBlock {& chef-client.bat -c "C:\chef\client.rb"}
-    
+
     Info "Disconnection to the following machine is starting.`n（下記マシンとの切断を開始します。）`n`nNode name: $NodeName`nIP address: $IPAddress"
     try
     {
@@ -1323,7 +1347,7 @@ function Update-ChefNode
     [string]$IPAddress = Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "private_network"
     $IPAddress = $IPAddress.substring(43).trim("`'")
     $PSSession = New-PSSession -ComputerName "$IPAddress" -Credential "vagrant"
-    
+
     Invoke-Command -Session $PSSession -ScriptBlock {C:\opscode\chef\bin\chef-client.bat -c "C:\chef\client.rb"}
     Remove-PSSession -Session $PSSession
 }
@@ -1448,7 +1472,7 @@ function Test-ChefNode
         Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
     }
-    
+
     Push-Location
     Set-Location -Path "$nodeFolderPath"
     Invoke-Execute "rake.bat" spec

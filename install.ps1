@@ -23,10 +23,10 @@
 
 Param
 (
-	[Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true)]
-	[string]
-	[ValidateNotNull()]
-	$Branch = "master"
+    [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true)]
+    [string]
+    [ValidateNotNull()]
+    $Branch = "master"
 )
 
 [string]$SourceURL = "https://raw.github.com/kukita/PowerChef/${Branch}/PowerChef"
