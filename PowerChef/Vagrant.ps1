@@ -394,7 +394,7 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
 
     if(Test-ExistsFile -Path "$BoxFilePath")
     {
-        Warning "The following Vagrant box is already exist.`n（下記 Vagrant の Box は既に存在します。）`n`n$BoxFilePath"
+        Warning "The following Vagrant box already exists.`n（下記 Vagrant の Box は既に存在します。）`n`n$BoxFilePath"
         return
     }
 

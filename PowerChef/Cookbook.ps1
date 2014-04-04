@@ -262,7 +262,7 @@ function New-Cookbook
 
     if(Test-ExistsFolder -Path "$PWD\site-cookbooks\$CookbookName")
     {
-        Warning "Specifies name of cookbook is already exist.`n（指定された名前のクックブックが既に存在します。）`n`n$CookbookName"
+        Warning "Specifies name of cookbook already exists.`n（指定された名前のクックブックが既に存在します。）`n`n$CookbookName"
         return
     }
 

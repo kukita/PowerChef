@@ -130,7 +130,7 @@ function New-File
 
     if(Test-ExistsFile -Path "$Path")
     {
-        Warning "The following file is already exist.`n（下記ファイルは既に存在します。）`n`n$Path"
+        Warning "The following file already exists.`n（下記ファイルは既に存在します。）`n`n$Path"
         return $(Get-Item -Path "$Path")
     }
 
@@ -251,7 +251,7 @@ function Download-File
 
     if(Test-ExistsFile -Path "$DistinationFilePath")
     {
-        Warning "The following file is already exist. This file is overridden.`n（下記ファイルが既に存在します。このファイルを上書きします。）`n`n$DistinationFilePath"
+        Warning "The following file already exists. This file is overridden.`n（下記ファイルが既に存在します。このファイルを上書きします。）`n`n$DistinationFilePath"
         Remove-File -Path "$DistinationFilePath"
     }
 

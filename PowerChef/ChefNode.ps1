@@ -36,10 +36,6 @@
 # Specifies the name of the node.This parameter is required.
 # （ノード名を指定します。このパラメーターは必須です。）
 #
-#.PARAMETER IPAddress
-# Specifies the IP address. This parameter is required.
-# （IPアドレスを指定します。このパラメーターは必須です。）
-#
 #.PARAMETER Environment
 # Specifies the name of the environment. Valid values ​​are "development", "test" and "production". The default value is "development".
 # （環境名を指定します。有効な値は "development"、"test"、"production" です。デフォルト値は "development" です。）
@@ -129,18 +125,13 @@ function New-ChefNodeSpecFile
         [ValidateNotNull()]
         $NodeName,
 
-        [Parameter(Mandatory = $true, Position = 1)]
-        [string]
-        [ValidateNotNull()]
-        $IPAddress,
-
-        [Parameter(Mandatory = $false, Position = 2)]
+        [Parameter(Mandatory = $false, Position = 1)]
         [string]
         [ValidateNotNull()]
         [ValidateSet("development", "test", "production") ]
         $Environment = "development",
 
-        [Parameter(Mandatory = $false, Position = 3)]
+        [Parameter(Mandatory = $false, Position = 2)]
         [string]
         [ValidateNotNull()]
         [ValidatePattern("^.*_spec.rb$")]
@@ -148,7 +139,9 @@ function New-ChefNodeSpecFile
     )
 
     [string]$nodeFolderPath = "$PWD\nodes\$Environment\$NodeName"
-    [string]$specFileContent = @"
+    [string]$OSType = "default"
+    [string]$IPAddress = ""
+    [string]$specFileContentForWindows = @"
 require 'serverspec'
 require 'winrm'
 
@@ -228,6 +221,103 @@ end
 #   it { should return_exit_status 0 }
 # end
 "@
+    [string]$specFileContentForDefault = @"
+require 'serverspec'
+require 'pathname'
+require 'net/ssh'
+
+include SpecInfra::Helper::Ssh
+include SpecInfra::Helper::DetectOS
+
+RSpec.configure do |c|
+  if ENV['ASK_SUDO_PASSWORD']
+    require 'highline/import'
+    c.sudo_password = ask("Enter sudo password: ") { |q| q.echo = false }
+  else
+    c.sudo_password = ENV['SUDO_PASSWORD']
+  end
+  c.before :all do
+    block = self.class.metadata[:example_group_block]
+    if RUBY_VERSION.start_with?('1.8')
+      file = block.to_s.match(/.*@(.*):[0-9]+>/)[1]
+    else
+      file = block.source_location.first
+    end
+    host  = File.basename(Pathname.new(file).dirname)
+    if c.host != host
+      c.ssh.close if c.ssh
+      c.host  = host
+      options = Net::SSH::Config.for(c.host)
+      user    = options[:user] || Etc.getlogin
+      c.ssh   = Net::SSH.start(host, user, options)
+    end
+  end
+end
+
+# # Testing for user groups.
+# describe group('xxxxxx') do
+#   it { should exist }
+# end
+
+# # Testing for users.
+# describe user('xxxxxx') do
+#   it { should exist }
+#   it { should belong_to_group 'xxxxxx' }
+#   it { should_not belong_to_group 'xxxxxx' }
+# end
+
+# # Testing for directories.
+# describe file('/xxxxxx/xxxxxx') do
+#   it { should be_directory }
+# end
+
+# # Testing for files.
+# describe file('/xxxxxx/xxxxxx') do
+#   it { should be_file }
+#   it { should contain /^xxxxxx/ }
+#   it { should be_readable.by('owner') }
+#   it { should be_readable.by_user('xxxxxx') }
+#   it { should_not be_readable.by('others') }
+#   it { should_not be_readable.by_user('xxxxxx') }
+#   it { should be_writable.by('owner') }
+#   it { should be_writable.by_user('xxxxxx') }
+#   it { should_not be_writable.by('others') }
+#   it { should_not be_writable.by_user('xxxxxx') }
+#   it { should be_executable.by('owner') }
+#   it { should be_executable.by_user('xxxxxx') }
+#   it { should_not be_executable.by('others') }
+#   it { should_not be_executable.by_user('xxxxxx') }
+# end
+
+# # Testing for enabled services.
+# describe service('xxxxxx') do
+#   it { should be_enabled }
+#   it { should be_running }
+# end
+
+# # Testing for disabled services.
+# describe service('xxxxxx') do
+#   it { should_not be_enabled }
+#   it { should_not be_running }
+# end
+
+# # Testing for open ports.
+# describe port(port_number) do
+#   it { should be_listening.with('tcp') }
+#   it { should be_listening.with('udp') }Pow
+# end
+
+# # Testing for close ports.
+# describe port(port_number) do
+#   it { should_not be_listening }
+# end
+
+# # Testing for command returns.
+# describe command('xxxxxx') do
+#   it { should return_stdout /^xxxxxx/ }
+#   it { should return_exit_status 0 }
+# end
+"@
 
     if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
     {
@@ -241,13 +331,31 @@ end
         return
     }
 
+    if(Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "node.vm.guest = :windows" -Quiet)
+    {
+        $OSType = "Windows"
+    }
+
+    $IPAddress = Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "private_network"
+    $IPAddress = $IPAddress.substring(43).trim("`'")
+
     if(Test-ExistsFile -Path "$nodeFolderPath\spec\lib\$SpecFileName")
     {
-        Warning "The following spec file is already exist.`n（下記 spec ファイルは既に存在します。）`n`n$nodeFolderPath\spec\lib\$SpecFileName"
+        Warning "The following spec file already exists.`n（下記 spec ファイルは既に存在します。）`n`n$nodeFolderPath\spec\lib\$SpecFileName"
         return
     }
 
-    New-File -Path "$nodeFolderPath\spec\lib\$SpecFileName" -Value "$specFileContent"
+    switch($OSType)
+    {
+        "Windows"
+        {
+            New-File -Path "$nodeFolderPath\spec\lib\$SpecFileName" -Value "$specFileContentForWindows"
+        }
+        default
+        {
+            New-File -Path "$nodeFolderPath\spec\lib\$SpecFileName" -Value "$specFileContentForDefault"
+        }
+    }
 }
 
 #
@@ -446,7 +554,7 @@ end
         }
     }
     New-File -Path "$nodeFolderPath\Rakefile" -Value "$RakefileContent"
-    New-ChefNodeSpecFile -NodeName "$NodeName" -IPAddress "192.168.56.$VMNumber" -Environment "$Environment" -SpecFileName "default_spec.rb"
+    New-ChefNodeSpecFile -NodeName "$NodeName" -Environment "$Environment" -SpecFileName "default_spec.rb"
     & "tree.com " /f "$nodeFolderPath"
     Info "Creation of the 'Chef Node' definition has finished.`n（'Chef Node' の定義の作製が完了しました。）"
 }

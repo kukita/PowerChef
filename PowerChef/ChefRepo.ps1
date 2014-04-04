@@ -147,7 +147,7 @@ knife[:berkshelf_path] = '$env:BERKSHELF_PATH'
 
     if(Test-ExistsFolder -Path "$env:POWERCHEF_HOME\chef-repositories\$SystemName\chef-repo")
     {
-        Warning "The following repository is already exist.`n（下記リポジトリは既に存在します。）`n`n$SystemName\chef-repo"
+        Warning "The following repository already exists.`n（下記リポジトリは既に存在します。）`n`n$SystemName\chef-repo"
         Get-ChefRepoPath -SystemName "$SystemName"
         return
     }

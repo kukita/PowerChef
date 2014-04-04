@@ -135,7 +135,7 @@ function New-Env
 
 	if((Get-Content -Path "$PROFILE" | Select-String -Pattern "$KeyName" -Quiet))
     {
-        Warning "The following environment variables is already exist.`n（下記環境変数は既に存在します。)`n`nKey name: $KeyName`nValue: $Value"
+        Warning "The following environment variables already exists.`n（下記環境変数は既に存在します。)`n`nKey name: $KeyName`nValue: $Value"
         return
     }
 

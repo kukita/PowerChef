@@ -16,11 +16,13 @@ IMPROVEMENTS:
 
   - `SetUp-ChefNode` function supports "Linux" as a guest OS.（`SetUp-ChefNode` ファンクションがゲストOS として "Linux" をサポート。）
 
-## 0.2.3 (unreleased)
+## 0.2.3 (April 5, 2014)
 
 IMPROVEMENTS:
 
   - `New-ChefNodeSpecfile` function supports "Linux" as a guest OS.（`New-ChefNodeSpecfile` ファンクションがゲストOS として "Linux" をサポート。）
+
+  - Fixes grammar error in the log message.（ログメッセージ上の文法誤りを修正）
 
 ## 0.2.2 (April 4, 2014)
 
