@@ -27,7 +27,7 @@ Param
 	[string]
 	[ValidateNotNull()]
 	$Branch = "master"
-}
+)
 
 [string]$SourceURL = "https://raw.github.com/kukita/PowerChef/${Branch}/PowerChef"
 [string]$PowerChefFolderPath = [Environment]::GetFolderPath("MyDocuments") + "\WindowsPowerShell\Modules\PowerChef"
