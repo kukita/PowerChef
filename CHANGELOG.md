@@ -28,7 +28,7 @@ IMPROVEMENTS:
 
   - `New-ChefNode` function supports "Linux" as a guest OS.（`New-ChefNode` ファンクションがゲストOS として "Linux" をサポート。）
 
-## 0.2.1 (unreleased)
+## 0.2.1 (April 4, 2014)
 
 IMPROVEMENTS:
 

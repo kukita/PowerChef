@@ -171,7 +171,7 @@ function Sync-GitRepository
         $DistinationFolderPath
     )
 
-    if(!(Test-IsExistFolder -Path "$DistinationFolderPath"))
+    if(!(Test-ExistsFolder -Path "$DistinationFolderPath"))
     {
         Error "The following folder is not found.`n（下記フォルダーが見つかりません。）`n`n$DistinationFolderPath"
         return

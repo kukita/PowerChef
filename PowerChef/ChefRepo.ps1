@@ -139,13 +139,13 @@ cookbook_path [
 knife[:berkshelf_path] = '$env:BERKSHELF_PATH'
 "@
 
-    if(!(Test-IsExistEnv -KeyName "POWERCHEF_HOME"))
+    if(!(Test-ExistsEnv -KeyName "POWERCHEF_HOME"))
     {
         Error "The environment attribute named POWERCHEF_HOME is not set.`n（環境変数POWERCHEF_HOMEが設定されていません。）"
         return
     }
 
-    if(Test-IsExistFolder -Path "$env:POWERCHEF_HOME\chef-repositories\$SystemName\chef-repo")
+    if(Test-ExistsFolder -Path "$env:POWERCHEF_HOME\chef-repositories\$SystemName\chef-repo")
     {
         Warning "The following repository is already exist.`n（下記リポジトリは既に存在します。）`n`n$SystemName\chef-repo"
         Get-ChefRepoPath -SystemName "$SystemName"
@@ -221,7 +221,7 @@ function Get-ChefRepoPath
         $SystemName
     )
 
-    if(!(Test-IsExistFolder -Path "$env:POWERCHEF_HOME\chef-repositories\$SystemName\chef-repo"))
+    if(!(Test-ExistsFolder -Path "$env:POWERCHEF_HOME\chef-repositories\$SystemName\chef-repo"))
     {
         Error "The following repository  is not found.`n（下記レポジトリが見つかりません。）`n`n$SystemName\chef-repo"
         return
