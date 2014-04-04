@@ -22,7 +22,7 @@ IMPROVEMENTS:
 
   - `New-ChefNodeSpecfile` function supports "Linux" as a guest OS.（`New-ChefNodeSpecfile` ファンクションがゲストOS として "Linux" をサポート。）
 
-## 0.2.2 (unreleased)
+## 0.2.2 (April 4, 2014)
 
 IMPROVEMENTS:
 
