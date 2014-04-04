@@ -235,13 +235,13 @@ end
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
     }
 
-    if(Test-IsExistFile -Path "$nodeFolderPath\spec\lib\$SpecFileName")
+    if(Test-ExistsFile -Path "$nodeFolderPath\spec\lib\$SpecFileName")
     {
         Warning "The following spec file is already exist.`n（下記 spec ファイルは既に存在します。）`n`n$nodeFolderPath\spec\lib\$SpecFileName"
         return
@@ -631,7 +631,7 @@ function Open-ChefNodeVagrantfile
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
@@ -767,7 +767,7 @@ function Open-ChefNodeSpecFile
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
@@ -889,7 +889,7 @@ function Start-ChefNode
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
@@ -1016,7 +1016,7 @@ function Show-ChefNodeStatus
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
@@ -1141,7 +1141,7 @@ function Install-ChefNode
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
@@ -1314,7 +1314,7 @@ function Update-ChefNode
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
@@ -1443,7 +1443,7 @@ function Test-ChefNode
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
@@ -1570,7 +1570,7 @@ function Stop-ChefNode
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記'Chef Node'が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
@@ -1695,7 +1695,7 @@ function Remove-ChefNode
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return

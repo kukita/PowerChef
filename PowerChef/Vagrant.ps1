@@ -87,7 +87,7 @@ Vagrant.configure("2") do |config|
 end
 "@
 
-    if(!(Test-IsExistEnv -KeyName "VAGRANT_HOME"))
+    if(!(Test-ExistsEnv -KeyName "VAGRANT_HOME"))
     {
         Error "The environment attribute named VAGRANT_HOME is not set.`n（環境変数 VAGRANT_HOME が設定されていません。）"
         return
@@ -142,7 +142,7 @@ end
 #
 function Install-Vagrant
 {
-    if(!(Test-IsExistEnv -KeyName "POWERCHEF_HOME"))
+    if(!(Test-ExistsEnv -KeyName "POWERCHEF_HOME"))
     {
         Error "The environment attribute named POWERCHEF_HOME is not set.`n（環境変数 POWERCHEF_HOME が設定されていません。）"
         return
@@ -283,13 +283,13 @@ function Update-Vagrant
 #
 function Open-HomeVagrantfile
 {
-    if(!(Test-IsExistEnv -KeyName "VAGRANT_HOME"))
+    if(!(Test-ExistsEnv -KeyName "VAGRANT_HOME"))
     {
         Error "The environment attribute named VAGRANT_HOME is not set.`n（環境変数 VAGRANT_HOME が設定されていません。）"
         return
     }
 
-    if (!(Test-IsExistFile -Path "$env:VAGRANT_HOME\Vagrantfile"))
+    if (!(Test-ExistsFile -Path "$env:VAGRANT_HOME\Vagrantfile"))
     {
         New-HomeVagrantfile
     }
@@ -392,7 +392,7 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
     [string]$BoxFileParentFolderPath = Split-Path -Path "$BoxFilePath" -Parent
     [string]$BoxFileName = Split-Path -Path "$BoxFilePath" -Leaf
 
-    if(Test-IsExistFile -Path "$BoxFilePath")
+    if(Test-ExistsFile -Path "$BoxFilePath")
     {
         Warning "The following Vagrant box is already exist.`n（下記 Vagrant の Box は既に存在します。）`n`n$BoxFilePath"
         return

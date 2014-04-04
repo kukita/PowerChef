@@ -149,7 +149,7 @@ TODO: Write the description about license or rights.
         return
     }
 
-    if(!(Test-IsExistFolder -Path "$PWD\site-cookbooks\$CookbookName"))
+    if(!(Test-ExistsFolder -Path "$PWD\site-cookbooks\$CookbookName"))
     {
         Warning "Specifies name of cookbook is not found.`n（指定されたクックブックが見つかりません。）`n`n$CookbookName"
         return
@@ -260,7 +260,7 @@ function New-Cookbook
         return
     }
 
-    if(Test-IsExistFolder -Path "$PWD\site-cookbooks\$CookbookName")
+    if(Test-ExistsFolder -Path "$PWD\site-cookbooks\$CookbookName")
     {
         Warning "Specifies name of cookbook is already exist.`n（指定された名前のクックブックが既に存在します。）`n`n$CookbookName"
         return
@@ -422,7 +422,7 @@ function Open-CookbookMetadata
         return
     }
 
-    if(!(Test-IsExistFolder -Path "$PWD\site-cookbooks\$CookbookName"))
+    if(!(Test-ExistsFolder -Path "$PWD\site-cookbooks\$CookbookName"))
     {
         Error "Specifies name of cookbook is not found.`n（指定されたクックブックが見つかりません。）`n`n$CookbookName"
         return
@@ -505,13 +505,13 @@ function Open-CookbookReadme
         return
     }
 
-    if(!(Test-IsExistFolder -Path "$PWD\site-cookbooks\$CookbookName"))
+    if(!(Test-ExistsFolder -Path "$PWD\site-cookbooks\$CookbookName"))
     {
         Error "Specifies name of cookbook is not found.`n（指定されたクックブックが見つかりません。）`n`n$CookbookName"
         return
     }
 
-    if(!(Test-IsExistFile -Path "$PWD\site-cookbooks\$CookbookName\README.md"))
+    if(!(Test-ExistsFile -Path "$PWD\site-cookbooks\$CookbookName\README.md"))
     {
         New-CookbookReadme -CookbookName "$CookbookName"
     }
@@ -612,7 +612,7 @@ function New-CookbookRecipe
         return
     }
 
-    if(!(Test-IsExistFolder -Path "$PWD\site-cookbooks\$CookbookName"))
+    if(!(Test-ExistsFolder -Path "$PWD\site-cookbooks\$CookbookName"))
     {
         Error "Specifies name of cookbook is not found.`n（指定されたクックブックが見つかりません。）`n`n$CookbookName"
         return
@@ -705,7 +705,7 @@ function Open-CookbookRecipe
         return
     }
 
-    if(!(Test-IsExistFolder -Path "$PWD\site-cookbooks\$CookbookName"))
+    if(!(Test-ExistsFolder -Path "$PWD\site-cookbooks\$CookbookName"))
     {
         Error "Specifies name of cookbook is not found.`n（指定されたクックブックが見つかりません。）`n`n$CookbookName"
         return
@@ -783,7 +783,7 @@ function Update-Cookbook
         return
     }
 
-    if(!(Test-IsExistFolder -Path "$PWD\site-cookbooks\$CookbookName"))
+    if(!(Test-ExistsFolder -Path "$PWD\site-cookbooks\$CookbookName"))
     {
         Error "Specifies name of cookbook is not found.`n（指定されたクックブックが見つかりません。）`n`n$CookbookName"
         return

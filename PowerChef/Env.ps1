@@ -27,14 +27,14 @@
 
 #
 # NAME（名前）
-#   Test-IsExistEnv
+#   Test-ExistsEnv
 #
 # DESCRIPTION（説明）
 #   This function returns a bool value to confirm the presence the specified environment variables.
 #   （指定した環境変数の有無を確認し bool 値を返します。）
 #
 # SYNTAX（構文）
-#   Test-IsExistEnv [-KeyName] <string> [-Value <string>]
+#   Test-ExistsEnv [-KeyName] <string> [-Value <string>]
 #
 # PARAMETERS（パラメーター）
 #   -KeyName <string>
@@ -54,7 +54,7 @@
 #       None
 #       （なし）
 #
-function Test-IsExistEnv
+function Test-ExistsEnv
 {
     Param
     (
@@ -69,18 +69,18 @@ function Test-IsExistEnv
         $Value = "."
     )
 
-    [bool]$isExistEnv = $false
+    [bool]$existsEnv = $false
 
     try
     {
-        $isExistEnv = Get-Content -Path "$PROFILE" | Select-String -Pattern "$KeyName" | Select-String -Pattern "$Value" -Quiet
+        $existsEnv = Get-Content -Path "$PROFILE" | Select-String -Pattern "$KeyName" | Select-String -Pattern "$Value" -Quiet
     }
     catch
     {
         Error "Check for the existence of the following environment attribute is failed.`n（下記環境変数の有無の確認に失敗しました。）`n`nKey name: $KeyName`nValue: $Value`n`n$Error"
         return
     }
-    return $isExistEnv
+    return $existsEnv
 }
 
 #
@@ -127,7 +127,7 @@ function New-Env
         $Value
     )
 
-    if(!(Test-IsExistFile -Path "$PROFILE"))
+    if(!(Test-ExistsFile -Path "$PROFILE"))
     {
         New-File -Path "$PROFILE" -Value "`$env:HOME = `$HOME"
         Add-Content -Path "$PROFILE" -Value "`n"
@@ -207,9 +207,9 @@ function Add-Env
         $Value
     )
 
-    [bool]$isExistEnvKeyName = $false
+    [bool]$existsEnvKeyName = $false
 
-    if(!(Test-IsExistFile -Path "$PROFILE"))
+    if(!(Test-ExistsFile -Path "$PROFILE"))
     {
         New-File -Path "$PROFILE" -Value "`$env:HOME = `$HOME"
         Add-Content -Path "$PROFILE" -Value "`n"

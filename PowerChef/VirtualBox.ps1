@@ -68,7 +68,7 @@
 #
 function Install-VirtualBox
 {
-    if(!(Test-IsExistEnv -KeyName "POWERCHEF_HOME"))
+    if(!(Test-ExistsEnv -KeyName "POWERCHEF_HOME"))
     {
         Error "The environment attribute named POWERCHEF_HOME is not set.`n（環境変数 POWERCHEF_HOME が設定されていません。）"
         return

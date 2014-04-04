@@ -62,7 +62,7 @@ function Install-MSIPackage
         $Path
     )
 
-    if(!(Test-IsExistFile -Path "$Path"))
+    if(!(Test-ExistsFile -Path "$Path"))
     {
         Error "The following file is not found.（下記ファイルが見つかりません。）`n`n$Path"
         return
@@ -117,7 +117,7 @@ function Update-MSIPackage
         $Path
     )
 
-    if(!(Test-IsExistFile -Path "$Path"))
+    if(!(Test-ExistsFile -Path "$Path"))
     {
         Error "The following file is not found.（下記ファイルが見つかりません。）`n`n$Path"
         return
