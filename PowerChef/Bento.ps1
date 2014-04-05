@@ -74,7 +74,7 @@
 #
 function Install-Bento
 {
-    if(!(Test-IsExistEnv -KeyName "POWERCHEF_HOME"))
+    if(!(Test-ExistsEnv -KeyName "POWERCHEF_HOME"))
     {
         Error "The environment attribute named POWERCHEF_HOME is not set.`n（環境変数 POWERCHEF_HOME が設定されていません。）"
         return
@@ -87,7 +87,7 @@ function Install-Bento
     }
 
     Info "Installation of 'Bento' is starting.`n（'Bento' のインストールを開始します。）"
-    if(!(Test-IsExistFolder -Path "$env:POWERCHEF_HOME\bento"))
+    if(!(Test-ExistsFolder -Path "$env:POWERCHEF_HOME\bento"))
     {
         Sync-GitRepository -RepositoryURL "git://github.com/opscode/bento.git" -DistinationFolderPath "$env:POWERCHEF_HOME\"
     }
@@ -146,13 +146,13 @@ function Install-Bento
 #
 function Update-Bento
 {
-    if(!(Test-IsExistEnv -KeyName "POWERCHEF_HOME"))
+    if(!(Test-ExistsEnv -KeyName "POWERCHEF_HOME"))
     {
         Error "The environment attribute named POWERCHEF_HOME is not set.`n（環境変数 POWERCHEF_HOME が設定されていません。）"
         return
     }
 
-    if(!(Test-IsExistFolder -Path "$env:POWERCHEF_HOME\bento"))
+    if(!(Test-ExistsFolder -Path "$env:POWERCHEF_HOME\bento"))
     {
         Error "'Bento' is not installed.`n（'Bento' がインストールされていません。）"
         return
@@ -276,7 +276,7 @@ function Invoke-VeeweeVboxBuild
         $Name
     )
 
-    if(!(Test-IsExistFolder -Path "$env:POWERCHEF_HOME\bento\definitions\$BoxName"))
+    if(!(Test-ExistsFolder -Path "$env:POWERCHEF_HOME\bento\definitions\$BoxName"))
     {
         Error "The following definition of virtual machine is not found.`n（下記仮想マシンの定義が見つかりません。）`n`n$Name"
         Show-VeeweeDefinitionVboxList

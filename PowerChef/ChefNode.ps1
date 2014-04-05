@@ -36,10 +36,6 @@
 # Specifies the name of the node.This parameter is required.
 # （ノード名を指定します。このパラメーターは必須です。）
 #
-#.PARAMETER IPAddress
-# Specifies the IP address. This parameter is required.
-# （IPアドレスを指定します。このパラメーターは必須です。）
-#
 #.PARAMETER Environment
 # Specifies the name of the environment. Valid values ​​are "development", "test" and "production". The default value is "development".
 # （環境名を指定します。有効な値は "development"、"test"、"production" です。デフォルト値は "development" です。）
@@ -129,18 +125,13 @@ function New-ChefNodeSpecFile
         [ValidateNotNull()]
         $NodeName,
 
-        [Parameter(Mandatory = $true, Position = 1)]
-        [string]
-        [ValidateNotNull()]
-        $IPAddress,
-
-        [Parameter(Mandatory = $false, Position = 2)]
+        [Parameter(Mandatory = $false, Position = 1)]
         [string]
         [ValidateNotNull()]
         [ValidateSet("development", "test", "production") ]
         $Environment = "development",
 
-        [Parameter(Mandatory = $false, Position = 3)]
+        [Parameter(Mandatory = $false, Position = 2)]
         [string]
         [ValidateNotNull()]
         [ValidatePattern("^.*_spec.rb$")]
@@ -148,7 +139,10 @@ function New-ChefNodeSpecFile
     )
 
     [string]$nodeFolderPath = "$PWD\nodes\$Environment\$NodeName"
-    [string]$specFileContent = @"
+    [string]$OSType = "default"
+    [string]$IPAddress = $IPAddress = Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "private_network"
+    $IPAddress = $IPAddress.substring(43).trim("`'")
+    [string]$specFileContentForWindows = @"
 require 'serverspec'
 require 'winrm'
 
@@ -228,6 +222,97 @@ end
 #   it { should return_exit_status 0 }
 # end
 "@
+    [string]$specFileContentForDefault = @"
+require 'serverspec'
+require 'pathname'
+require 'net/ssh'
+
+include SpecInfra::Helper::Ssh
+include SpecInfra::Helper::DetectOS
+
+RSpec.configure do |c|
+  if ENV['ASK_SUDO_PASSWORD']
+    require 'highline/import'
+    c.sudo_password = ask("Enter sudo password: ") { |q| q.echo = false }
+  else
+    c.sudo_password = ENV['SUDO_PASSWORD']
+  end
+  c.before :all do
+    host = '$IPAddress'
+    if c.host != host
+      c.ssh.close if c.ssh
+      c.host  = host
+      options = Net::SSH::Config.for(c.host)
+      user    = options[:user] || 'vagrant'
+      c.ssh   = Net::SSH.start(host, user, options)
+    end
+  end
+end
+
+# # Testing for user groups.
+# describe group('xxxxxx') do
+#   it { should exist }
+# end
+
+# # Testing for users.
+# describe user('xxxxxx') do
+#   it { should exist }
+#   it { should belong_to_group 'xxxxxx' }
+#   it { should_not belong_to_group 'xxxxxx' }
+# end
+
+# # Testing for directories.
+# describe file('/xxxxxx/xxxxxx') do
+#   it { should be_directory }
+# end
+
+# # Testing for files.
+# describe file('/xxxxxx/xxxxxx') do
+#   it { should be_file }
+#   it { should contain /^xxxxxx/ }
+#   it { should be_readable.by('owner') }
+#   it { should be_readable.by_user('xxxxxx') }
+#   it { should_not be_readable.by('others') }
+#   it { should_not be_readable.by_user('xxxxxx') }
+#   it { should be_writable.by('owner') }
+#   it { should be_writable.by_user('xxxxxx') }
+#   it { should_not be_writable.by('others') }
+#   it { should_not be_writable.by_user('xxxxxx') }
+#   it { should be_executable.by('owner') }
+#   it { should be_executable.by_user('xxxxxx') }
+#   it { should_not be_executable.by('others') }
+#   it { should_not be_executable.by_user('xxxxxx') }
+# end
+
+# # Testing for enabled services.
+# describe service('xxxxxx') do
+#   it { should be_enabled }
+#   it { should be_running }
+# end
+
+# # Testing for disabled services.
+# describe service('xxxxxx') do
+#   it { should_not be_enabled }
+#   it { should_not be_running }
+# end
+
+# # Testing for open ports.
+# describe port(port_number) do
+#   it { should be_listening.with('tcp') }
+#   it { should be_listening.with('udp') }Pow
+# end
+
+# # Testing for close ports.
+# describe port(port_number) do
+#   it { should_not be_listening }
+# end
+
+# # Testing for command returns.
+# describe command('xxxxxx') do
+#   it { should return_stdout /^xxxxxx/ }
+#   it { should return_exit_status 0 }
+# end
+"@
 
     if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
     {
@@ -235,19 +320,34 @@ end
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
     }
 
-    if(Test-IsExistFile -Path "$nodeFolderPath\spec\lib\$SpecFileName")
+    if(Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "node.vm.guest = :windows" -Quiet)
     {
-        Warning "The following spec file is already exist.`n（下記 spec ファイルは既に存在します。）`n`n$nodeFolderPath\spec\lib\$SpecFileName"
+        $OSType = "Windows"
+    }
+
+    if(Test-ExistsFile -Path "$nodeFolderPath\spec\lib\$SpecFileName")
+    {
+        Warning "The following spec file already exists.`n（下記 spec ファイルは既に存在します。）`n`n$nodeFolderPath\spec\lib\$SpecFileName"
         return
     }
 
-    New-File -Path "$nodeFolderPath\spec\lib\$SpecFileName" -Value "$specFileContent"
+    switch($OSType)
+    {
+        "Windows"
+        {
+            New-File -Path "$nodeFolderPath\spec\lib\$SpecFileName" -Value "$specFileContentForWindows"
+        }
+        default
+        {
+            New-File -Path "$nodeFolderPath\spec\lib\$SpecFileName" -Value "$specFileContentForDefault"
+        }
+    }
 }
 
 #
@@ -364,9 +464,9 @@ function New-ChefNode
         [Parameter(Mandatory = $true, Position = 1)]
         [string]
         [ValidateNotNull()]
-        [ValidateSet("Windows") ]
+        [ValidateSet("Windows", "Linux") ]
         $OSType,
-        
+
         [Parameter(Mandatory = $true, Position = 2)]
         [int]
         [ValidateNotNull()]
@@ -393,7 +493,7 @@ function New-ChefNode
 
     [string]$NodeName =  "$NodeNamePrefix-192-168-56-$VMnumber"
     [string]$nodeFolderPath = "$PWD\nodes\$Environment\$NodeName"
-    [string]$vagrantfileContent = @"
+    [string]$vagrantfileContentForWindows = @"
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
@@ -410,6 +510,20 @@ Vagrant.configure('2') do |config|
   config.vm.network :forwarded_port, guest: 5985, host: $($VMNumber + 50000), id: "winrm", auto_correct: true
 end
 "@
+    [string]$vagrantfileContentforLinux = @"
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure('2') do |config|
+  config.vm.define '$NodeName' do |node|
+    node.vm.box = '$BoxName'
+    node.vm.network 'private_network', ip: '192.168.56.$VMNumber'
+    node.vm.provider :virtualbox do |vb|
+      vb.name = '$NodeName'
+    end
+  end
+end
+"@
     [string]$RakefileContent =@"
 require 'rake'
 require 'rspec/core/rake_task'
@@ -419,10 +533,20 @@ RSpec::Core::RakeTask.new(:spec) do |t|
 end
 "@
 
-    Info "Creation of the 'Chef Node' definition is starting.`n（'Chef Node'　の定義の作製を開始します。）"
-    New-File -Path "$nodeFolderPath\Vagrantfile" -Value "$vagrantfileContent"
+    Info "Creation of the 'Chef Node' definition is starting.`n（'Chef Node' の定義の作製を開始します。）"
+    switch($OSType)
+    {
+        "Windows"
+        {
+            New-File -Path "$nodeFolderPath\Vagrantfile" -Value "$vagrantfileContentForWindows"
+        }
+        "Linux"
+        {
+            New-File -Path "$nodeFolderPath\Vagrantfile" -Value "$vagrantfileContentForLinux"
+        }
+    }
     New-File -Path "$nodeFolderPath\Rakefile" -Value "$RakefileContent"
-    New-ChefNodeSpecFile -NodeName "$NodeName" -IPAddress "192.168.56.$VMNumber" -Environment "$Environment" -SpecFileName "default_spec.rb"
+    New-ChefNodeSpecFile -NodeName "$NodeName" -Environment "$Environment" -SpecFileName "default_spec.rb"
     & "tree.com " /f "$nodeFolderPath"
     Info "Creation of the 'Chef Node' definition has finished.`n（'Chef Node' の定義の作製が完了しました。）"
 }
@@ -430,7 +554,7 @@ end
 #
 #.SYNOPSIS
 #   This function shows the list of 'Chef Node'.
-#   （'Chef Node'　の一覧を表示します。）
+#   （'Chef Node' の一覧を表示します。）
 #
 #.DESCRIPTION
 #   None
@@ -511,7 +635,7 @@ function Show-ChefNodeList
 {
     if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
     {
-        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが　'chef-repo'　ではありません。）"
+        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが 'chef-repo' ではありません。）"
         return
     }
 
@@ -521,7 +645,7 @@ function Show-ChefNodeList
 #
 #.SYNOPSIS
 #   This function opens Vagrantfile of the 'Chef Node'.
-#   （'Chef Node'　の　Vagrantfile　を開きます。）
+#   （'Chef Node' の Vagrantfile を開きます。）
 #
 #.DESCRIPTION
 #   None
@@ -533,7 +657,7 @@ function Show-ChefNodeList
 #
 #.PARAMETER Environment
 # Specifies the name of the environment. Valid values ​​are "development", "test" and "production". The default value is "development".
-# （環境名を指定します。有効な値は　"development"、"test"、"production"　です。デフォルト値は　"development"　です。）
+# （環境名を指定します。有効な値は "development"、"test"、"production" です。デフォルト値は "development" です。）
 #
 #.INPUTS
 #   string
@@ -627,13 +751,13 @@ function Open-ChefNodeVagrantfile
 
     if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
     {
-        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが　'chef-repo'　ではありません。）"
+        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが 'chef-repo' ではありません。）"
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
-        Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
+        Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
     }
 
@@ -643,7 +767,7 @@ function Open-ChefNodeVagrantfile
 #
 #.SYNOPSIS
 #   This function opens the spec file of serverspec.
-#   （serverspec　の　spec　ファイルを開きます。）
+#   （serverspec の spec ファイルを開きます。）
 #
 #.DESCRIPTION
 #   None
@@ -659,11 +783,11 @@ function Open-ChefNodeVagrantfile
 #
 #.PARAMETER Environment
 # Specifies the name of the environment. Valid values ​​are "development", "test" and "production". The default value is "development".
-# （環境名を指定します。有効な値は　"development"、"test"、"production"　です。デフォルト値は　"development"　です。）
+# （環境名を指定します。有効な値は "development"、"test"、"production" です。デフォルト値は "development" です。）
 #
 #.PARAMETER SpecFileName
 # Specifies the name of the spec file. The default value is "default_spec.rb".
-# （specファイル名を指定します。デフォルト値は　"default_spec.rb"　です。）
+# （specファイル名を指定します。デフォルト値は "default_spec.rb" です。）
 #
 #.INPUTS
 #   string
@@ -763,13 +887,13 @@ function Open-ChefNodeSpecFile
 
     if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
     {
-        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが　'chef-repo'　ではありません。）"
+        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが 'chef-repo' ではありません。）"
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
-        Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
+        Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
     }
 
@@ -779,7 +903,7 @@ function Open-ChefNodeSpecFile
 #
 #.SYNOPSIS
 #   This function starts up the 'Chef Node'.
-#   （'Chef Node'　の起動をします。）
+#   （'Chef Node' の起動をします。）
 #
 #.DESCRIPTION
 #   None
@@ -791,7 +915,7 @@ function Open-ChefNodeSpecFile
 #
 #.PARAMETER Environment
 # Specifies the name of the environment. Valid values ​​are "development", "test" and "production". The default value is "development".
-# （環境名を指定します。有効な値は　"development"、"test"、"production"　です。デフォルト値は　"development"　です。）
+# （環境名を指定します。有効な値は "development"、"test"、"production" です。デフォルト値は "development" です。）
 #
 #.INPUTS
 #   string
@@ -885,19 +1009,19 @@ function Start-ChefNode
 
     if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
     {
-        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが　'chef-repo'　ではありません。）"
+        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが 'chef-repo' ではありません。）"
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
-        Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
+        Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
     }
 
     Push-Location
     Set-Location -Path "$nodeFolderPath"
-    Invoke-Execute "vagrant.exe" up
+    Invoke-Execute "vagrant" up
     Pop-Location
 }
 
@@ -906,7 +1030,7 @@ Set-Alias -Name "Create-ChefNode" -Value "Start-ChefNode"
 #
 #.SYNOPSIS
 #   This function shows status of the 'Chef Node'.
-#   （'Chef Node'　を状態を表示します。）
+#   （'Chef Node' を状態を表示します。）
 #
 #.DESCRIPTION
 #   None
@@ -918,7 +1042,7 @@ Set-Alias -Name "Create-ChefNode" -Value "Start-ChefNode"
 #
 #.PARAMETER Environment
 # Specifies the name of the environment. Valid values ​​are "development", "test" and "production". The default value is "development".
-# （環境名を指定します。有効な値は　"development"、"test"、"production"　です。デフォルト値は　"development"　です。）
+# （環境名を指定します。有効な値は "development"、"test"、"production" です。デフォルト値は "development" です。）
 #
 #.INPUTS
 #   string
@@ -1012,26 +1136,26 @@ function Show-ChefNodeStatus
 
     if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
     {
-        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが　'chef-repo'　ではありません。）"
+        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが 'chef-repo' ではありません。）"
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
-        Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
+        Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
     }
 
     Push-Location
     Set-Location -Path "$nodeFolderPath"
-    & "vagrant.exe" status
+    & "vagrant" status
     Pop-Location
 }
 
 #
 #.SYNOPSIS
 #   This function sets up as 'Chef Node' to the specified node.
-#   （指定したノードを　'Chef Node'　としてセットアップします。）
+#   （指定したノードを 'Chef Node' としてセットアップします。）
 #
 #.DESCRIPTION
 #   None
@@ -1043,7 +1167,15 @@ function Show-ChefNodeStatus
 #
 #.PARAMETER Environment
 # Specifies the name of the environment. Valid values ​​are "development", "test" and "production". The default value is "development".
-# （環境名を指定します。有効な値は　"development"、"test"、"production"　です。デフォルト値は　"development"　です。）
+# （環境名を指定します。有効な値は "development"、"test"、"production" です。デフォルト値は "development" です。）
+#
+#.PARAMETER ChefServerURL
+# Specifies the URL of Chef Server. The default value is "http://192.168.56.1:8889".
+# （Chef Server の URL を指定します。デフォルト値は "http://192.168.56.1:8889" です。）
+#
+#.PARAMETER UserName
+# Specifies the name of user. The default value is "vagrant".
+# （ユーザー名を指定します。デフォルト値は "vagrant" です。）
 #
 #.INPUTS
 #   string
@@ -1130,73 +1262,103 @@ function Install-ChefNode
         [string]
         [ValidateNotNull()]
         [ValidateSet("development", "test", "production") ]
-        $Environment = "development"
+        $Environment = "development",
+
+        [Parameter(Mandatory = $false, Position = 2)]
+        [string]
+        [ValidateNotNull()]
+        $ChefServerURL = "http://192.168.56.1:8889",
+
+        [Parameter(Mandatory = $false, Position = 3)]
+        [string]
+        [ValidateNotNull()]
+        $UserName = "vagrant"
     )
 
     [string]$nodeFolderPath = "$PWD\nodes\$Environment\$NodeName"
-
-    if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
-    {
-        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが　'chef-repo'　ではありません。）"
-        return
-    }
-
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
-    {
-        Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
-        return
-    }
-
-    [string]$IPAddress = Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "private_network"
-    $IPAddress = $IPAddress.substring(43).trim("`'")
+    [string]$OSType = "default"
+    [string]$IPAddress = ""
     [string]$pemContent = Get-Content -Path "$env:SystemDrive\chef\validation.pem" -Raw
     [string]$clientRbContent = @"
-chef_server_url 'http://192.168.56.1:8889'
+chef_server_url '$ChefServerURL'
 node_name '$NodeName'
 
 environment '$Environment'
 "@
 
-    Info "Connection to the following machine is starting.`n（下記マシンとの接続を開始します。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-    try
+    if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
     {
-        $PSSession = New-PSSession -ComputerName "$IPAddress" -Credential "vagrant"
+        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが 'chef-repo' ではありません。）"
+        return
     }
-    catch
+
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
-        Error "Connection to the following machine is failed.`n（下記マシンとの接続に失敗しました。）`n`nNode name: $NodeName`nIP address: $IPAddress`n`n$Error"
+        Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
+        return
     }
-    Info "Connection to the following machine has finished successfully.`n（下記マシンとの接続が正常に完了しました。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-        
-    Info "Downloading a installer of 'Chef' on the following machine.`n（下記マシン上で　'Chef'　のインストーラーをダウンロードしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-    Invoke-Command -Session $PSSession -ScriptBlock {(New-Object System.Net.WebClient).DownloadFile("https://www.opscode.com/chef/install.msi", "$env:TEMP\Chef.msi")} 
 
-    Info "Installing 'Chef' on the following machine.`n（下記マシン上で　'Chef'　をインストールしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-    Invoke-Command -Session $PSSession -ScriptBlock {Start-Process -FilePath "msiexec.exe" -ArgumentList "/package $env:TEMP\Chef.msi /passive" -Verb "runas" -Wait} 
-    Invoke-Command -Session $PSSession -ScriptBlock {$env:Path = "C:\opscode\chef\bin;$env:Path"} 
-
-    Info "Creating 'C:\chef\client.rb' on the following machine.`n（下記マシン上で　'C:\chef\client.rb' を作成しています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-    Invoke-Command -Session $PSSession -ScriptBlock {& knife.bat configure client -s "http://192.168.56.1:8889" "C:\chef\"}
-    Invoke-Command -Session $PSSession -ScriptBlock {Add-Content -Path "C:\chef\client.rb" -Value "node_name '$args'"} -ArgumentList "$NodeName"
-    Invoke-Command -Session $PSSession -ScriptBlock {Add-Content -Path "C:\chef\client.rb" -Value "environment '$args'"} -ArgumentList "$Environment"
-
-    Info "Creating 'C:\chef\validation.pem' on the following machine.`n（下記マシン上で　'C:\chef\validation.pem' を作成しています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-    Invoke-Command -Session $PSSession -ScriptBlock {Remove-Item -Path "C:\chef\validation.pem" -Force}
-    Invoke-Command -Session $PSSession -ScriptBlock {New-Item -Path "C:\chef\validation.pem" -ItemType "File" -Value "$args"} -ArgumentList "$pemContent"
-
-    Info "Registering as 'Chef Node' on the following machine.`n（下記マシン上で　'Chef Node'　の登録を行っています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-    Invoke-Command -Session $PSSession -ScriptBlock {& chef-client.bat -c "C:\chef\client.rb"}
-    
-    Info "Disconnection to the following machine is starting.`n（下記マシンとの切断を開始します。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-    try
+    if(Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "node.vm.guest = :windows" -Quiet)
     {
-        Remove-PSSession -Session $PSSession
+        $OSType = "Windows"
     }
-    catch
+
+    $IPAddress = Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "private_network"
+    $IPAddress = $IPAddress.substring(43).trim("`'")
+
+    switch($OSType)
     {
-        Error "Disconnection to the following machine is failed.`n（下記マシンとの切断に失敗しました。）`n`nNode name: $NodeName`nIP address: $IPAddress`n`n$Error"
+        "Windows"
+        {
+            Info "Connection to the following machine is starting.`n（下記マシンとの接続を開始します。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            try
+            {
+                $PSSession = New-PSSession -ComputerName "$IPAddress" -Credential "$UserName"
+            }
+            catch
+            {
+                Error "Connection to the following machine is failed.`n（下記マシンとの接続に失敗しました。）`n`nNode name: $NodeName`nIP address: $IPAddress`n`n$Error"
+            }
+            Info "Connection to the following machine has finished successfully.`n（下記マシンとの接続が正常に完了しました。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+
+            Info "Downloading a installer of 'Chef' on the following machine.`n（下記マシン上で 'Chef' のインストーラーをダウンロードしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            Invoke-Command -Session $PSSession -ScriptBlock {(New-Object System.Net.WebClient).DownloadFile("https://www.opscode.com/chef/install.msi", "$env:TEMP\Chef.msi")}
+
+            Info "Installing 'Chef' on the following machine.`n（下記マシン上で 'Chef' をインストールしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            Invoke-Command -Session $PSSession -ScriptBlock {Start-Process -FilePath "msiexec.exe" -ArgumentList "/package $env:TEMP\Chef.msi /passive" -Verb "runas" -Wait}
+            Invoke-Command -Session $PSSession -ScriptBlock {$env:Path = "C:\opscode\chef\bin;$env:Path"}
+
+            Info "Creating 'C:\chef\client.rb' on the following machine.`n（下記マシン上で 'C:\chef\client.rb' を作成しています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            Invoke-Command -Session $PSSession -ScriptBlock {& knife.bat configure client -s "http://192.168.56.1:8889" "C:\chef\"}
+            Invoke-Command -Session $PSSession -ScriptBlock {Add-Content -Path "C:\chef\client.rb" -Value "node_name '$args'"} -ArgumentList "$NodeName"
+            Invoke-Command -Session $PSSession -ScriptBlock {Add-Content -Path "C:\chef\client.rb" -Value "environment '$args'"} -ArgumentList "$Environment"
+
+            Info "Creating 'C:\chef\validation.pem' on the following machine.`n（下記マシン上で 'C:\chef\validation.pem' を作成しています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            Invoke-Command -Session $PSSession -ScriptBlock {Remove-Item -Path "C:\chef\validation.pem" -Force}
+            Invoke-Command -Session $PSSession -ScriptBlock {New-Item -Path "C:\chef\validation.pem" -ItemType "File" -Value "$args"} -ArgumentList "$pemContent"
+
+            Info "Registering as 'Chef Node' on the following machine.`n（下記マシン上で 'Chef Node' の登録を行っています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            Invoke-Command -Session $PSSession -ScriptBlock {& chef-client.bat -c "C:\chef\client.rb"}
+
+            Info "Disconnection to the following machine is starting.`n（下記マシンとの切断を開始します。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            try
+            {
+                Remove-PSSession -Session $PSSession
+            }
+            catch
+            {
+                Error "Disconnection to the following machine is failed.`n（下記マシンとの切断に失敗しました。）`n`nNode name: $NodeName`nIP address: $IPAddress`n`n$Error"
+            }
+            Info "Disconnection to the following machine has finished successfully.`n（下記マシンとの切断が正常に完了しました。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+        }
+        default
+        {
+            Push-Location
+            Set-Location -Path "$nodeFolderPath"
+            Warning "Support only 'Windows' as guest OS.`n（ゲストOSとして 'Windows' のみサポートしています。）"
+            Pop-Location
+        }
     }
-    Info "Disconnection to the following machine has finished successfully.`n（下記マシンとの切断が正常に完了しました。）`n`nNode name: $NodeName`nIP address: $IPAddress"
 }
 
 Set-Alias -Name "SetUp-ChefNode" -Value "Install-ChefNode"
@@ -1204,7 +1366,7 @@ Set-Alias -Name "SetUp-ChefNode" -Value "Install-ChefNode"
 #
 #.SYNOPSIS
 #   This function runs Chef Client.
-#   （Chef Client　を実行します。）
+#   （Chef Client を実行します。）
 #
 #.DESCRIPTION
 #   None
@@ -1216,7 +1378,11 @@ Set-Alias -Name "SetUp-ChefNode" -Value "Install-ChefNode"
 #
 #.PARAMETER Environment
 # Specifies the name of the environment. Valid values ​​are "development", "test" and "production". The default value is "development".
-# （環境名を指定します。有効な値は　"development"、"test"、"production"　です。デフォルト値は　"development"　です。）
+# （環境名を指定します。有効な値は "development"、"test"、"production" です。デフォルト値は "development" です。）
+#
+#.PARAMETER UserName
+# Specifies the name of user. The default value is "vagrant".
+# （ユーザー名を指定します。デフォルト値は "vagrant" です。）
 #
 #.INPUTS
 #   string
@@ -1303,29 +1469,54 @@ function Update-ChefNode
         [string]
         [ValidateNotNull()]
         [ValidateSet("development", "test", "production") ]
-        $Environment = "development"
+        $Environment = "development",
+
+        [Parameter(Mandatory = $false, Position = 2)]
+        [string]
+        [ValidateNotNull()]
+        $UserName = "vagrant"
     )
 
     [string]$nodeFolderPath = "$PWD\nodes\$Environment\$NodeName"
+    [string]$OSType = "default"
+    [string]$IPAddress = ""
 
     if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
     {
-        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが　'chef-repo'　ではありません。）"
+        Error "Current directory is not 'chef-repo'.`n（カレントディレクトリが 'chef-repo' ではありません。）"
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
-        Error "The following 'Chef Node' is not found.`n（下記　'Chef Node'　が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
+        Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
     }
 
-    [string]$IPAddress = Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "private_network"
+    if(Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "node.vm.guest = :windows" -Quiet)
+    {
+        $OSType = "Windows"
+    }
+
+    $IPAddress = Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "private_network"
     $IPAddress = $IPAddress.substring(43).trim("`'")
-    $PSSession = New-PSSession -ComputerName "$IPAddress" -Credential "vagrant"
-    
-    Invoke-Command -Session $PSSession -ScriptBlock {C:\opscode\chef\bin\chef-client.bat -c "C:\chef\client.rb"}
-    Remove-PSSession -Session $PSSession
+	$PSSession = New-PSSession -ComputerName "$IPAddress" -Credential "$UserName"
+
+    switch($OSType)
+    {
+        "Windows"
+        {
+            Invoke-Command -Session $PSSession -ScriptBlock {C:\opscode\chef\bin\chef-client.bat -c "C:\chef\client.rb"}
+            Remove-PSSession -Session $PSSession
+        }
+        default
+        {
+            Push-Location
+            Set-Location -Path "$nodeFolderPath"
+            Warning "Support only 'Windows' as guest OS.`n（ゲストOSとして 'Windows' のみサポートしています。）"
+            Pop-Location
+        }
+	}
 }
 
 Set-Alias -Name "Converge-ChefNode" -Value "Update-ChefNode"
@@ -1333,7 +1524,7 @@ Set-Alias -Name "Converge-ChefNode" -Value "Update-ChefNode"
 #
 #.SYNOPSIS
 #   This function uses 'serverspec' and verifies the specified 'Chef Node'.
-#   （'serverspec'を使って　'Chef Node'　を検証します。）
+#   （'serverspec'を使って 'Chef Node' を検証します。）
 #
 #.DESCRIPTION
 #   None
@@ -1443,12 +1634,12 @@ function Test-ChefNode
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
     }
-    
+
     Push-Location
     Set-Location -Path "$nodeFolderPath"
     Invoke-Execute "rake.bat" spec
@@ -1570,7 +1761,7 @@ function Stop-ChefNode
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記'Chef Node'が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
@@ -1578,7 +1769,7 @@ function Stop-ChefNode
 
     Push-Location
     Set-Location -Path "$nodeFolderPath"
-    Invoke-Execute "vagrant.exe" halt
+    Invoke-Execute "vagrant" halt
     Pop-Location
 }
 
@@ -1695,14 +1886,14 @@ function Remove-ChefNode
         return
     }
 
-    if(!(Test-IsExistFile -Path "$nodeFolderPath\Vagrantfile"))
+    if(!(Test-ExistsFile -Path "$nodeFolderPath\Vagrantfile"))
     {
         Error "The following 'Chef Node' is not found.`n（下記 'Chef Node' が見つかりません。）`n`nEnvironment: $Environment`nNode name: $NodeName`nVagrantfile path: $nodeFolderPath\Vagrantfile"
         return
     }
 
     Set-Location -Path "$nodeFolderPath"
-    Invoke-Execute "vagrant.exe" destroy "--force"
+    Invoke-Execute "vagrant" destroy "--force"
     Set-Location -Path ".."
     Remove-Folder -Path "$nodeFolderPath"
     Pop-Location

@@ -423,7 +423,7 @@ function New-ChefZeroACL
 #
 function Start-ChefZero
 {
-    if(!(Test-IsExistFile -Path "$env:SystemDrive\chef\validation.pem"))
+    if(!(Test-ExistsFile -Path "$env:SystemDrive\chef\validation.pem"))
     {
         New-Folder -Path "$env:SystemDrive\chef"
         Invoke-Execute "ssh-keygen.exe" "-t" "rsa" "-N" '""' "-f" "$env:SystemDrive\chef\validation.pem"
