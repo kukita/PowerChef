@@ -21,7 +21,15 @@
 # limitations under the License.
 #
 
-[string]$SourceURL = "https://raw.github.com/kukita/PowerChef/master/PowerChef"
+Param
+(
+    [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true)]
+    [string]
+    [ValidateNotNull()]
+    $Branch = "master"
+)
+
+[string]$SourceURL = "https://raw.github.com/kukita/PowerChef/${Branch}/PowerChef"
 [string]$PowerChefFolderPath = [Environment]::GetFolderPath("MyDocuments") + "\WindowsPowerShell\Modules\PowerChef"
 $webClient = New-Object System.Net.WebClient
 
