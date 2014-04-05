@@ -27,14 +27,14 @@
 
 #
 # NAME（名前）
-#   Test-IsExistFile
+#   Test-ExistsFile
 #
 # DESCRIPTION（説明）
 #   This function returns a bool value to confirm the presence of the file with the specified path.
 #   （指定したパスのファイルの有無を確認し bool 値を返します。）
 #
 # SYNTAX（構文）
-#   Test-IsExistFile [-Path] <string>
+#   Test-ExistsFile [-Path] <string>
 #
 # PARAMETERS（パラメーター）
 #   -Path <string>
@@ -51,7 +51,7 @@
 #       This function returns a bool value to confirm the presence of the file with the specified path.
 #       （指定したファイルの有無を確認し bool 値で返します。）
 #
-function Test-IsExistFile
+function Test-ExistsFile
 {
     Param
     (
@@ -62,18 +62,18 @@ function Test-IsExistFile
         $Path
     )
 
-    [bool]$isExistFile = $false
+    [bool]$existsFile = $false
 
     try
     {
-        $isExistFile = Test-Path -Path "$Path" -PathType "Leaf"
+        $existsFile = Test-Path -Path "$Path" -PathType "Leaf"
     }
     catch
     {
         Error "Check for the existence of the following file is faild.`n（下記ファイルの有無の確認に失敗しました。`n`n$Path`n`n$Error）"
         return
     }
-    return $isExistFile
+    return $existsFile
 }
 
 #
@@ -123,14 +123,14 @@ function New-File
 
     [string]$parentFolderPath = Split-Path -Path "$Path" -Parent
 
-    if(!(Test-IsExistFolder -Path "$parentFolderPath"))
+    if(!(Test-ExistsFolder -Path "$parentFolderPath"))
     {
         New-Folder -Path "$parentFolderPath"
     }
 
-    if(Test-IsExistFile -Path "$Path")
+    if(Test-ExistsFile -Path "$Path")
     {
-        Warning "The following file is already exist.`n（下記ファイルは既に存在します。）`n`n$Path"
+        Warning "The following file already exists.`n（下記ファイルは既に存在します。）`n`n$Path"
         return $(Get-Item -Path "$Path")
     }
 
@@ -184,7 +184,7 @@ function Remove-File
         $Path
     )
 
-    if(!(Test-IsExistFile -Path "$Path"))
+    if(!(Test-ExistsFile -Path "$Path"))
     {
         Warning "The following file is not found.`n（下記ファイルが見つかりません。）`n`n$Path"
         return
@@ -249,9 +249,9 @@ function Download-File
         $DistinationFilePath
     )
 
-    if(Test-IsExistFile -Path "$DistinationFilePath")
+    if(Test-ExistsFile -Path "$DistinationFilePath")
     {
-        Warning "The following file is already exist. This file is overridden.`n（下記ファイルが既に存在します。このファイルを上書きします。）`n`n$DistinationFilePath"
+        Warning "The following file already exists. This file is overridden.`n（下記ファイルが既に存在します。このファイルを上書きします。）`n`n$DistinationFilePath"
         Remove-File -Path "$DistinationFilePath"
     }
 
@@ -305,7 +305,7 @@ function Open-File
         $Path
     )
 
-    if(!(Test-IsExistFile -Path "$Path"))
+    if(!(Test-ExistsFile -Path "$Path"))
     {
         Error "The following file is not found.`n（下記ファイルが見つかりません。）`n`n$Path"
         return

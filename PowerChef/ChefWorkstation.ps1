@@ -110,7 +110,7 @@ function Install-ChefWorkstation
     Info "Setting up of 'Chef Workstation' is starting.`n（'Chef Workstation' のセットアップを開始します。）"
     New-Env -KeyName "POWERCHEF_HOME" -Value "$PowerChefHomePath"
     
-    if(!(Test-IsExistFolder -Path "$PowerChefHomePath"))
+    if(!(Test-ExistsFolder -Path "$PowerChefHomePath"))
     {
         Info "Creating The following folder is starting.`n（下記フォルダーの作製を開始します。）`n`n$PowerChefHomePath"
         try
@@ -212,7 +212,7 @@ Set-Alias -Name "SetUp-ChefWorkstation" -Value "Install-ChefWorkstation"
 function Update-ChefWorkstation
 {
 
-    if(!(Test-IsExistEnv -KeyName "POWERCHEF_HOME"))
+    if(!(Test-ExistsEnv -KeyName "POWERCHEF_HOME"))
     {
         Error "The environment attribute named POWERCHEF_HOME is not set.`n（環境変数 POWERCHEF_HOME が設定されていません。）"
         return

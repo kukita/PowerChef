@@ -87,7 +87,7 @@ Vagrant.configure("2") do |config|
 end
 "@
 
-    if(!(Test-IsExistEnv -KeyName "VAGRANT_HOME"))
+    if(!(Test-ExistsEnv -KeyName "VAGRANT_HOME"))
     {
         Error "The environment attribute named VAGRANT_HOME is not set.`n（環境変数 VAGRANT_HOME が設定されていません。）"
         return
@@ -142,7 +142,7 @@ end
 #
 function Install-Vagrant
 {
-    if(!(Test-IsExistEnv -KeyName "POWERCHEF_HOME"))
+    if(!(Test-ExistsEnv -KeyName "POWERCHEF_HOME"))
     {
         Error "The environment attribute named POWERCHEF_HOME is not set.`n（環境変数 POWERCHEF_HOME が設定されていません。）"
         return
@@ -179,10 +179,10 @@ function Install-Vagrant
     New-Env -KeyName "VAGRANT_HOME" -Value "`$env:POWERCHEF_HOME\var\vagrant"
     New-Folder -Path "$env:VAGRANT_HOME\boxfiles"
     New-HomeVagrantfile
-    Invoke-Execute "vagrant.exe" plugin install "vagrant-windows"
+    Invoke-Execute "vagrant" plugin install "vagrant-windows"
     Info "Installation of 'Vagrant' has finished.`n（'Vagrant'のインストールが完了しました。）"
     & "cver.bat" "Vagrant" -localonly
-    & "vagrant.exe" plugin list
+    & "vagrant" plugin list
 }
 
 #
@@ -234,7 +234,7 @@ function Update-Vagrant
     Update-ChocolateyPackage -PackageName "Vagrant"
     Update-ChocolateyPackage -PackageName "7Zip"
     Update-ChocolateyPackage -PackageName "cwRsync"
-    Invoke-Execute "vagrant.exe" plugin update "vagrant-windows"
+    Invoke-Execute "vagrant" plugin update "vagrant-windows"
 }
 
 #
@@ -283,13 +283,13 @@ function Update-Vagrant
 #
 function Open-HomeVagrantfile
 {
-    if(!(Test-IsExistEnv -KeyName "VAGRANT_HOME"))
+    if(!(Test-ExistsEnv -KeyName "VAGRANT_HOME"))
     {
         Error "The environment attribute named VAGRANT_HOME is not set.`n（環境変数 VAGRANT_HOME が設定されていません。）"
         return
     }
 
-    if (!(Test-IsExistFile -Path "$env:VAGRANT_HOME\Vagrantfile"))
+    if (!(Test-ExistsFile -Path "$env:VAGRANT_HOME\Vagrantfile"))
     {
         New-HomeVagrantfile
     }
@@ -392,9 +392,9 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
     [string]$BoxFileParentFolderPath = Split-Path -Path "$BoxFilePath" -Parent
     [string]$BoxFileName = Split-Path -Path "$BoxFilePath" -Leaf
 
-    if(Test-IsExistFile -Path "$BoxFilePath")
+    if(Test-ExistsFile -Path "$BoxFilePath")
     {
-        Warning "The following Vagrant box is already exist.`n（下記 Vagrant の Box は既に存在します。）`n`n$BoxFilePath"
+        Warning "The following Vagrant box already exists.`n（下記 Vagrant の Box は既に存在します。）`n`n$BoxFilePath"
         return
     }
 
@@ -406,7 +406,7 @@ load include_vagrantfile if File.exist?(include_vagrantfile)
     Invoke-Execute "7z.exe" a "-ttar" "$BoxFilePath" "$env:VAGRANT_HOME\tmp\$VMName\*"
     Push-Location
     Set-Location -Path "$BoxFileParentFolderPath"
-    Invoke-Execute "vagrant.exe" box add "$VMName" "$BoxFileName"
+    Invoke-Execute "vagrant" box add "$VMName" "$BoxFileName"
     Pop-Location
     Info "Creation of the following box of Vagrant has finished.`n（下記 Vagrant の Box の作製が完了しました。）`n`n$BoxFilePath"
 }
