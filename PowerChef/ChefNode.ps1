@@ -152,7 +152,7 @@ include Serverspec::Helper::Windows
 RSpec.configure do |c|
   user = 'vagrant'
   pass = 'vagrant'
-  endpoint = 'http://$IPAddress:5985/wsman'
+  endpoint = 'http://${IPAddress}:5985/wsman'
 
   c.winrm = ::WinRM::WinRMWebService.new(endpoint, :ssl, :user => user, :pass => pass, :basic_auth_only => true)
   c.winrm.set_timeout 300 # 5 minutes max timeout for any operation
@@ -520,6 +520,7 @@ Vagrant.configure('2') do |config|
     node.vm.network 'private_network', ip: '192.168.56.$VMNumber'
     node.vm.provider :virtualbox do |vb|
       vb.name = '$NodeName'
+      vb.gui = false
     end
   end
 end
@@ -1500,7 +1501,7 @@ function Update-ChefNode
 
     $IPAddress = Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "private_network"
     $IPAddress = $IPAddress.substring(43).trim("`'")
-	$PSSession = New-PSSession -ComputerName "$IPAddress" -Credential "$UserName"
+    $PSSession = New-PSSession -ComputerName "$IPAddress" -Credential "$UserName"
 
     switch($OSType)
     {
@@ -1516,7 +1517,7 @@ function Update-ChefNode
             Warning "Support only 'Windows' as guest OS.`n（ゲストOSとして 'Windows' のみサポートしています。）"
             Pop-Location
         }
-	}
+    }
 }
 
 Set-Alias -Name "Converge-ChefNode" -Value "Update-ChefNode"
@@ -1892,6 +1893,7 @@ function Remove-ChefNode
         return
     }
 
+    Push-Location
     Set-Location -Path "$nodeFolderPath"
     Invoke-Execute "vagrant" destroy "--force"
     Set-Location -Path ".."

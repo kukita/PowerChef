@@ -1,6 +1,6 @@
 ﻿# PowerChef
 
-'PowerChef' is a module of PowerShell to support the development in the Windows environment used the 'chef'.
+'PowerChef' is a module of PowerShell to support the development in the Windows environment used the 'Chef'.
 
 （'PowerChef' は 'Chef' を使用した Windows 環境での開発をサポートするための PowerShell のモジュールです。）
 
@@ -12,7 +12,7 @@
 
 ## Install（インストール）
 
-Run 'Windows PowerShell' and run the following command.
+Run 'Windows PowerShell' and execute the following command.
 
 （'Windows PowerShell' を起動し、下記コマンドを実行します。）
 

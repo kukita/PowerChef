@@ -10,6 +10,12 @@ IMPROVEMENTS:
 
   - `Converge-ChefNode` function supports "Linux" as a guest OS.（`Converge-ChefNode` ファンクションがゲストOS として "Linux" をサポート。）
 
+## 0.3.1 (April 8, 2014)
+
+BUG FIXES:
+
+  - `New-ChefNodeSpecfile` function: Fixed a problem that the output file is not reflected the IP address.（出力ファイルに IP アドレスが反映されない問題を修正。）
+
 ## 0.3.0 (April 5, 2014)
 
 FEATURES:

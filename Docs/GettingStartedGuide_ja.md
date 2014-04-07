@@ -12,7 +12,7 @@ PowerChef の基本的なファンクションとその使い方について、�
 
 [5: クックブックのアップロード](#section5)
 
-[6: Node 環境のセットアップ](#section6)
+[6: Node の作成とセットアップ](#section6)
 
 [7: クックブックの適用](#section7)
 
@@ -196,7 +196,7 @@ Chef Zero（インメモリー版軽量 Chef Server）を起動し、作成し�
     
 → ポート 8889 番の状態が LISTENING であることを確かめます。
 
-### 手順 5-2: `New-ChefZeroACL` ファンクションを使って、Windows ファイアウォールの設定を行います（Windows 8、Windows 2012 以降の環境のみ）
+### 手順 5-2: `New-ChefZeroACL` ファンクションを使って、Windows ファイアウォールの設定を行います（Windows 8、Windows Server 2012 以降の環境のみ）
 
     PS> New-ChefZeroACL
 
@@ -207,7 +207,7 @@ Chef Zero（インメモリー版軽量 Chef Server）を起動し、作成し�
     
 → クックブックの一覧が表示されれば成功です。
 
-## <a name="section6">6: Node 環境のセットアップ
+## <a name="section6">6: Node の作成とセットアップ
 
 Chef の Node 環境を作成します。
 
