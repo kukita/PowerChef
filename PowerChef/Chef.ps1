@@ -80,19 +80,7 @@ function Install-Chef
         Add-Env -KeyName "PATH" -Value "$env:SystemDrive\opscode\chef\embedded\bin"
     }
 
-    if(Test-CanExecute -Command "knife.bat")
-    {
-        Warning "'Chef' is already installed.`n（'Chef' は既にインストールされています。）"
-        & "knife.bat" --version
-        return
-    }
-
-    Info "Installation of 'Chef' is starting.`n（'Chef' のインストールを開始します。）"
-    Download-File -SourceURL "https://www.opscode.com/chef/install.msi" -DistinationFilePath "$env:TEMP\Chef.msi"
-    Install-MSIPackage -Path "$env:TEMP\Chef.msi"
-    Remove-File "$env:TEMP\Chef.msi"
-    Info "Installation of 'Chef' has finished.`n（'Chef' のインストールが完了しました。）"
-    & "knife.bat" --version
+    Install-ChocolateyPackage -PackageName "chef-client"
 }
 
 #
@@ -141,18 +129,7 @@ function Install-Chef
 #
 function Update-Chef
 {
-    if(!(Test-CanExecute -Command "knife"))
-    {
-        Error "'Chef' is not installed.`n（'Chef' がインストールされていません。）"
-        return
-    }
-
-    Info "Update of 'Chef' is starting.`n（'Chef' のアップデートを開始します。）"
-    Download-File -SourceURL "https://www.opscode.com/chef/install.msi" -DistinationFilePath "$env:TEMP\Chef.msi"
-    Update-MSIPackage -Path "$env:TEMP\Chef.msi"
-    Remove-File -Path "$env:TEMP\Chef.msi"
-    Info "Update of 'Chef' has finished.`n（'Chef' のアップデートが完了しました。）"
-    & "knife.bat" --version
+    Update-ChocolateyPackage -PackageName "chef-client"
 }
 
 #

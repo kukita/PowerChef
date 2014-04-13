@@ -10,6 +10,12 @@ IMPROVEMENTS:
 
   - `Converge-ChefNode` function supports "Linux" as a guest OS.（`Converge-ChefNode` ファンクションがゲストOS として "Linux" をサポート。）
 
+## 0.3.2 (April 13, 2014)
+
+IMPROVEMENTS:
+
+  - `Install-Chef` function and `Install-Chef` function change to install the 'chef-client' using 'Chocolatey'.（`Install-Chef` ファンクションと`Update-Chef` ファンクションが 'Chocolatey' を使って 'chef-client' を使ってインストールするように変更。）
+
 ## 0.3.1 (April 8, 2014)
 
 BUG FIXES:
