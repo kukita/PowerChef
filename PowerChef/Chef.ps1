@@ -11,7 +11,6 @@
 #   .\File.ps1
 #   .\Execute.ps1
 #   .\Env.ps1
-#   .\MSIPackage.ps1
 #
 # Copyright (C) 2014 Keisuke Kukita
 #

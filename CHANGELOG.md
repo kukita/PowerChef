@@ -1,8 +1,8 @@
-## 0.4.0 (unreleased)
+## 0.4.0 (April 19, 2014)
 
 FEATURES:
 
-  - Full support for "Linux" as a guest OS.（ゲストOS として "Linux" を完全サポート）
+  - Support for "Linux" as a guest OS.（ゲストOS として "Linux" をサポート）
 
 IMPROVEMENTS:
 

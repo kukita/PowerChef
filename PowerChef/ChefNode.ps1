@@ -151,10 +151,10 @@ include Serverspec::Helper::Windows
 
 RSpec.configure do |c|
   user = 'vagrant'
-  pass = 'vagrant'
+  password = ask("Enter password: ") { |q| q.echo = false }
   endpoint = 'http://${IPAddress}:5985/wsman'
 
-  c.winrm = ::WinRM::WinRMWebService.new(endpoint, :ssl, :user => user, :pass => pass, :basic_auth_only => true)
+  c.winrm = ::WinRM::WinRMWebService.new(endpoint, :ssl, :user => user, :pass => password, :basic_auth_only => true)
   c.winrm.set_timeout 300 # 5 minutes max timeout for any operation
 end
 
@@ -231,21 +231,18 @@ include SpecInfra::Helper::Ssh
 include SpecInfra::Helper::DetectOS
 
 RSpec.configure do |c|
-  if ENV['ASK_SUDO_PASSWORD']
-    require 'highline/import'
-    c.sudo_password = ask("Enter sudo password: ") { |q| q.echo = false }
-  else
-    c.sudo_password = ENV['SUDO_PASSWORD']
-  end
+  require 'highline/import'
+  user = 'vagrant'
+  password = ask("Enter password: ") { |q| q.echo = false }
+  host = '$IPAddress'
+  
   c.before :all do
-    host = '$IPAddress'
-    if c.host != host
-      c.ssh.close if c.ssh
-      c.host  = host
-      options = Net::SSH::Config.for(c.host)
-      user    = options[:user] || 'vagrant'
-      c.ssh   = Net::SSH.start(host, user, options)
-    end
+    c.ssh.close if c.ssh
+    c.host = host
+    options = Net::SSH::Config.for(c.host)
+    options[:password] = password
+    c.sudo_password = password
+    c.ssh = Net::SSH.start(c.host, user, options)
   end
 end
 
@@ -500,6 +497,7 @@ function New-ChefNode
 Vagrant.configure('2') do |config|
   config.vm.define '$NodeName' do |node|
     node.vm.box = '$BoxName'
+    node.vm.hostname = '$NodeName'
     node.vm.guest = :windows
     node.vm.network 'private_network', ip: '192.168.56.$VMNumber'
     node.vm.provider :virtualbox do |vb|
@@ -517,6 +515,7 @@ end
 Vagrant.configure('2') do |config|
   config.vm.define '$NodeName' do |node|
     node.vm.box = '$BoxName'
+    node.vm.hostname = '$NodeName'
     node.vm.network 'private_network', ip: '192.168.56.$VMNumber'
     node.vm.provider :virtualbox do |vb|
       vb.name = '$NodeName'
@@ -1280,12 +1279,6 @@ function Install-ChefNode
     [string]$OSType = "default"
     [string]$IPAddress = ""
     [string]$pemContent = Get-Content -Path "$env:SystemDrive\chef\validation.pem" -Raw
-    [string]$clientRbContent = @"
-chef_server_url '$ChefServerURL'
-node_name '$NodeName'
-
-environment '$Environment'
-"@
 
     if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
     {
@@ -1330,7 +1323,7 @@ environment '$Environment'
             Invoke-Command -Session $PSSession -ScriptBlock {$env:Path = "C:\opscode\chef\bin;$env:Path"}
 
             Info "Creating 'C:\chef\client.rb' on the following machine.`n（下記マシン上で 'C:\chef\client.rb' を作成しています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-            Invoke-Command -Session $PSSession -ScriptBlock {& knife.bat configure client -s "http://192.168.56.1:8889" "C:\chef\"}
+            Invoke-Command -Session $PSSession -ScriptBlock {& knife.bat configure client -s "$ChefServerURL" "C:\chef\"}
             Invoke-Command -Session $PSSession -ScriptBlock {Add-Content -Path "C:\chef\client.rb" -Value "node_name '$args'"} -ArgumentList "$NodeName"
             Invoke-Command -Session $PSSession -ScriptBlock {Add-Content -Path "C:\chef\client.rb" -Value "environment '$args'"} -ArgumentList "$Environment"
 
@@ -1356,7 +1349,20 @@ environment '$Environment'
         {
             Push-Location
             Set-Location -Path "$nodeFolderPath"
-            Warning "Support only 'Windows' as guest OS.`n（ゲストOSとして 'Windows' のみサポートしています。）"
+            Info "Installing 'Chef' on the following machine.`n（下記マシン上で 'Chef' をインストールしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            & vagrant ssh --command "curl https://www.getchef.com/chef/install.sh | sudo bash"
+
+            Info "Creating '/etc/chef/client.rb' on the following machine.`n（下記マシン上で '/etc/chef/client.rb' を作成しています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            & vagrant ssh --command "sudo knife configure client -s '$ChefServerURL' '/etc/chef/'"
+            & vagrant ssh --command "sudo chown 'vagrant' /etc/chef/*"
+            & vagrant ssh --command "echo 'environment $Environment' >> /etc/chef/client.rb"
+
+            Info "Creating '/etc/chef/validation.pem' on the following machine.`n（下記マシン上で '/etc/chef/validation.pem'を作成しています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            & vagrant ssh --command "echo '$pemContent' > /etc/chef/validation.pem"
+            & vagrant ssh --command "sudo chown 'root' /etc/chef/*"
+
+            Info "Registering as 'Chef Node' on the following machine.`n（下記マシン上で 'Chef Node' の登録を行っています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            & vagrant ssh --command "sudo chef-client -c /etc/chef/client.rb"
             Pop-Location
         }
     }
@@ -1501,12 +1507,12 @@ function Update-ChefNode
 
     $IPAddress = Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "private_network"
     $IPAddress = $IPAddress.substring(43).trim("`'")
-    $PSSession = New-PSSession -ComputerName "$IPAddress" -Credential "$UserName"
 
     switch($OSType)
     {
         "Windows"
         {
+            $PSSession = New-PSSession -ComputerName "$IPAddress" -Credential "$UserName"
             Invoke-Command -Session $PSSession -ScriptBlock {C:\opscode\chef\bin\chef-client.bat -c "C:\chef\client.rb"}
             Remove-PSSession -Session $PSSession
         }
@@ -1514,7 +1520,7 @@ function Update-ChefNode
         {
             Push-Location
             Set-Location -Path "$nodeFolderPath"
-            Warning "Support only 'Windows' as guest OS.`n（ゲストOSとして 'Windows' のみサポートしています。）"
+            & vagrant ssh --command "sudo chef-client -c /etc/chef/client.rb"
             Pop-Location
         }
     }
