@@ -64,6 +64,7 @@ Vagrant.configure("2") do |config|
     vb.customize ['modifyvm', :id, '--guestmemoryballoon', 3328] # 64bit OS only support
     vb.customize ['modifyvm', :id, '--cpus', 2]
     vb.customize ['modifyvm', :id, '--cpuexecutioncap', 100]
+    vb.customize ['modifyvm', :id, '--ioapic', 'on']
     vb.customize ['modifyvm', :id, '--hpet', 'on']
     vb.customize ['modifyvm', :id, '--hwvirtex', 'on']
     vb.customize ['modifyvm', :id, '--nestedpaging', 'on']

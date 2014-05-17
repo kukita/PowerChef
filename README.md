@@ -24,4 +24,4 @@ To learn how to use, refer the following 'Getting Started Guide'.
 
 (使用方法については、下記の　'Getting Started Guide'　を参考にしてください。)
 
-[Getting Started Guide （Japanese only）](https://github.com/kukita/PowerChef/blob/master/Docs/GettingStartedGuide_ja.md)
+[Getting Started Guide （Japanese verison only）](https://github.com/kukita/PowerChef/blob/master/Docs/GettingStartedGuide_ja.md)

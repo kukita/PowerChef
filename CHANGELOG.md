@@ -1,8 +1,14 @@
+## 0.4.1 (May 18, 2014)
+
+IMPROVEMENTS:
+
+  - Fix to ver.2.0.16 the version of Berkshelf.（Berkshelf のバージョンを ver.2.0.16 に固定。）
+
 ## 0.4.0 (April 19, 2014)
 
 FEATURES:
 
-  - Support for "Linux" as a guest OS.（ゲストOS として "Linux" をサポート）
+  - Support for "Linux" as a guest OS.（ゲストOS として "Linux" をサポート。）
 
 IMPROVEMENTS:
 
