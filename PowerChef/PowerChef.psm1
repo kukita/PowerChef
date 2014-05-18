@@ -27,7 +27,8 @@ if(Get-Module -Name PowerChef)
 }
 
 Push-Location
-Set-Location -Path "$HOME\Documents\WindowsPowerShell\Modules\PowerChef"
+[string]$PowerChefFolderPath = [Environment]::GetFolderPath("MyDocuments") + "\WindowsPowerShell\Modules\PowerChef"
+Set-Location -Path "$PowerChefFolderPath"
 . .\Log.ps1
 . .\Folder.ps1
 . .\File.ps1

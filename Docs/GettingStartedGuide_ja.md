@@ -22,7 +22,9 @@ PowerChef の基本的なファンクションとその使い方について、�
 
 PowerChef モジュールをローカルマシンにダウンロードします。
 
-### 手順 1-1: スタートメニューから 'Windows PowerShell' を起動します
+### 手順 1-1: 'Windows PowerShell' を起動します
+
+    スタートメニューから 'Windows PowerShell' を起動します
 
 ### 手順 1-2: PowerShellスクリプトの実行セキュリティ・ポリシーを RemoteSigned に変更します
 
@@ -90,7 +92,9 @@ PowerChef モジュールをローカルマシンにダウンロードします�
 
 Vagrant の Box を作成します。
 
-### 手順 3-1: スタートメニューから 'Oracle VM VirtualBox' を起動します
+### 手順 3-1: 'Oracle VM VirtualBox' を起動します
+
+    スタートメニューから 'Oracle VM VirtualBox' を起動します
 
 ### 手順 3-2: `Show-VeeweeDefinitionVboxList` ファンクションを使って、Bento(Veewee) で定義済みの OS の一覧を表示します
 

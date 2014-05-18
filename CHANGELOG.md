@@ -1,6 +1,12 @@
+## 0.4.2 (May 18, 2014)
+
+BUG FIXES:
+
+  - Fix fail to install when the drive of 'My Documents' is not the system drive'.（'My Documents' がシステムドライブでない場合にインストールに失敗する問題を修正。）
+
 ## 0.4.1 (May 18, 2014)
 
-IMPROVEMENTS:
+BUG FIXES:
 
   - Fix to ver.2.0.16 the version of Berkshelf.（Berkshelf のバージョンを ver.2.0.16 に固定。）
 
