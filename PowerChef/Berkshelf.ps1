@@ -81,7 +81,9 @@ function Install-Berkshelf
     }
 
     Info "Installation of the following package is starting.`n（下記パッケージのインストールを開始します。）`n`nBerkshelf"
-    & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" install "berkshelf" -v 2.0.16 --no-ri --no-rdoc
+    & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" install "buff-extensions" -v "0.5.0" --no-ri --no-rdoc
+    & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" install "varia_model" -v "0.3.2" --no-ri --no-rdoc
+    & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" install "berkshelf" -v "2.0.16" --no-ri --no-rdoc
     if($LASTEXITCODE -ne 0)
     {
         Error "Installation of the following package is faild.`n（下記パッケージのインストールに失敗しました。）`n`nBerkshelfe`n`nExit code: $LASTEXITCODE"
@@ -130,26 +132,7 @@ function Install-Berkshelf
 #
 function Update-Berkshelf
 {
-    if(!(Test-CanExecute -Command "gem.bat"))
-    {
-        Error "You must run `Install-Chef` before to update 'Berkshelf'.`n（'Berkshelf' をアップデートする前に `Install-Chef` を実行する必要があります。）"
-        return
-    }
-
-    if(!(Test-IsInstalledChefGemPackage -PackageName "berkshelf"))
-    {
-        Error "The following package is not installed.`n（下記パッケージがインストールされていません。）`n`nBerkshelf"
-        return
-    }
-
-    Info "Update of the following package is starting.`n（下記パッケージのアップデートを開始します。）`n`nBerkshelf"
-    & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" update "berkshelf" -v 2.0.16 --no-ri --no-rdoc
-    if($LASTEXITCODE -ne 0)
-    {
-        Error "Update of the following package is faild.`n（下記パッケージのアップデートに失敗しました。）`n`n$Berkshelf`n`nExit code: $LASTEXITCODE"
-        return
-    }
-    Info "Update of the following package has finished successfully.`n（下記パッケージのアップデートが正常に完了しました。）`n`nBerkshelf"
+    Install-Berkshelf
 }
 
 # SIG # Begin signature block

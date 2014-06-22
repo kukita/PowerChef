@@ -8,7 +8,7 @@
 
 'PowerChef' works in PowerShell 3.0 or later.
 
-（'PowerChef' は PowerShell 3.0 以降で動作します。） 
+（'PowerChef' は PowerShell 3.0 以降で動作します。）
 
 ## Install（インストール）
 
@@ -16,7 +16,9 @@ Run 'Windows PowerShell' and execute the following command.
 
 （'Windows PowerShell' を起動し、下記コマンドを実行します。）
 
-    PS> Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://raw.github.com/kukita/PowerChef/master/install.ps1")
+```ps1
+PS> Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://raw.github.com/kukita/PowerChef/master/install.ps1")
+```
 
 ## Getting Started Guide（利用ガイド）
 

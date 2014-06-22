@@ -67,8 +67,6 @@
 function Install-Serverspec
 {
     Install-ChefGemPackage -PackageName "serverspec"
-	Invoke-Execute "gem.bat" uninstall "rspec-core" "-aIx" 
-	Invoke-Execute "gem.bat" install "rspec-core" "-v" "2.14.7" "--no-rdoc" "--no-ri"
 }
 
 #
@@ -116,8 +114,6 @@ function Install-Serverspec
 function Update-Serverspec
 {
     Update-ChefGemPackage -PackageName "serverspec"
-	Invoke-Execute "gem.bat" uninstall "rspec-core" "-aIx" 
-	Invoke-Execute "gem.bat" install "rspec-core" "-v" "2.14.7" "--no-rdoc" "--no-ri"
 }
 
 # SIG # Begin signature block

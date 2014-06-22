@@ -791,7 +791,7 @@ function Update-Cookbook
 
     Info "Uploading of the cookbook is starting.`n（クックブックのアップロードを開始します。）"
     Invoke-Execute "berks.bat" install "--berksfile=site-cookbooks/$CookbookName/Berksfile"
-	Invoke-Execute "berks.bat" upload "--berksfile=site-cookbooks/$CookbookName/Berksfile" "--no-freeze"
+    Invoke-Execute "berks.bat" upload "--berksfile=site-cookbooks/$CookbookName/Berksfile" "--no-freeze"
     Info "Uploading of the cookbook has finished.`n（クックブックのアップロードが完了しました。）"
     & "knife.bat" cookbook list
 }

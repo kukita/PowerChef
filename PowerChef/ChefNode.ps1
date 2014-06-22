@@ -235,7 +235,7 @@ RSpec.configure do |c|
   user = 'vagrant'
   password = ask("Enter password: ") { |q| q.echo = false }
   host = '$IPAddress'
-  
+
   c.before :all do
     c.ssh.close if c.ssh
     c.host = host
@@ -323,7 +323,7 @@ end
         return
     }
 
-    if(Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "node.vm.guest = :windows" -Quiet)
+    if(Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "node.vm.communicator = 'winrm'" -Quiet)
     {
         $OSType = "Windows"
     }
@@ -497,15 +497,14 @@ function New-ChefNode
 Vagrant.configure('2') do |config|
   config.vm.define '$NodeName' do |node|
     node.vm.box = '$BoxName'
+    node.vm.communicator = 'winrm'
     node.vm.hostname = '$NodeName'
-    node.vm.guest = :windows
     node.vm.network 'private_network', ip: '192.168.56.$VMNumber'
     node.vm.provider :virtualbox do |vb|
       vb.name = '$NodeName'
       vb.gui = true
     end
   end
-  config.vm.network :forwarded_port, guest: 5985, host: $($VMNumber + 50000), id: "winrm", auto_correct: true
 end
 "@
     [string]$vagrantfileContentforLinux = @"
@@ -1037,8 +1036,8 @@ Set-Alias -Name "Create-ChefNode" -Value "Start-ChefNode"
 #   （なし）
 #
 #.PARAMETER NodeName
-# Specifies the name of the node.This parameter is required.
-# （ノード名を指定します。このパラメーターは必須です。）
+# Specifies the name of the node.
+# （ノード名を指定します。）
 #
 #.PARAMETER Environment
 # Specifies the name of the environment. Valid values ​​are "development", "test" and "production". The default value is "development".
@@ -1120,10 +1119,10 @@ function Show-ChefNodeStatus
 {
     Param
     (
-        [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $false, Position = 0, ValueFromPipeline = $true)]
         [string]
         [ValidateNotNull()]
-        $NodeName,
+        $NodeName = "all",
 
         [Parameter(Mandatory = $false, Position = 1)]
         [string]
@@ -1133,6 +1132,12 @@ function Show-ChefNodeStatus
     )
 
     [string]$nodeFolderPath = "$PWD\nodes\$Environment\$NodeName"
+
+    if($NodeName -eq "all")
+    {
+        & "vagrant" global-status
+        return
+    }
 
     if((Split-Path -Path "$PWD" -Leaf) -ne "chef-repo")
     {
@@ -1292,7 +1297,7 @@ function Install-ChefNode
         return
     }
 
-    if(Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "node.vm.guest = :windows" -Quiet)
+    if(Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "node.vm.communicator = 'winrm'" -Quiet)
     {
         $OSType = "Windows"
     }
@@ -1315,12 +1320,12 @@ function Install-ChefNode
             }
             Info "Connection to the following machine has finished successfully.`n（下記マシンとの接続が正常に完了しました。）`n`nNode name: $NodeName`nIP address: $IPAddress"
 
-            Info "Downloading a installer of 'Chef' on the following machine.`n（下記マシン上で 'Chef' のインストーラーをダウンロードしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-            Invoke-Command -Session $PSSession -ScriptBlock {(New-Object System.Net.WebClient).DownloadFile("https://www.opscode.com/chef/install.msi", "$env:TEMP\Chef.msi")}
+            Info "Installing 'Chocolatey' on the following machine.`n（下記マシン上で 'Chocolatey' をインストールしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
+            Invoke-Command -Session $PSSession -ScriptBlock {Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://chocolatey.org/install.ps1")}
 
             Info "Installing 'Chef' on the following machine.`n（下記マシン上で 'Chef' をインストールしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-            Invoke-Command -Session $PSSession -ScriptBlock {Start-Process -FilePath "msiexec.exe" -ArgumentList "/package $env:TEMP\Chef.msi /passive" -Verb "runas" -Wait}
-            Invoke-Command -Session $PSSession -ScriptBlock {$env:Path = "C:\opscode\chef\bin;$env:Path"}
+            Invoke-Command -Session $PSSession -ScriptBlock {& $env:SystemDrive\chocolatey\bin\cinst.bat "chef-client"}
+            Invoke-Command -Session $PSSession -ScriptBlock {$env:Path = "$env:SystemDrive\opscode\chef\bin;$env:Path"}
 
             Info "Creating 'C:\chef\client.rb' on the following machine.`n（下記マシン上で 'C:\chef\client.rb' を作成しています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
             Invoke-Command -Session $PSSession -ScriptBlock {& knife.bat configure client -s "$ChefServerURL" "C:\chef\"}
@@ -1500,7 +1505,7 @@ function Update-ChefNode
         return
     }
 
-    if(Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "node.vm.guest = :windows" -Quiet)
+    if(Get-Content -Path "$nodeFolderPath\Vagrantfile" | Select-String -Pattern "node.vm.communicator = 'winrm'" -Quiet)
     {
         $OSType = "Windows"
     }

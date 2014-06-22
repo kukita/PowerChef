@@ -1,3 +1,19 @@
+## 0.5.0 (June 23, 2014)
+
+FEATURES:
+
+  - Support for "Vagrant 1.6".（"Vagrant 1.6" をサポート。）
+
+IMPROVEMENTS:
+
+  - `SetUp-ChefNode` function installs 'Chef' using 'Chocolatery'.（`SetUp-ChefNode` ファンクションにおいて 'Chocolatey' を使って 'Chef' をインストールするように変更。）
+
+  - `Show-ChefNodeStatus` function supports running with no parameters.（`Show-ChefNodeStatus` ファンクションにおいてパラメータなしでの実行をサポート。）
+
+BUG FIXES:
+
+  - Fix fail to install Berkshelf 2.0.16.（Berkshelf 2.0.16 のインストールに失敗する問題を修正。）
+
 ## 0.4.2 (May 18, 2014)
 
 BUG FIXES:

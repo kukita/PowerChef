@@ -180,10 +180,8 @@ function Install-Vagrant
     New-Env -KeyName "VAGRANT_HOME" -Value "`$env:POWERCHEF_HOME\var\vagrant"
     New-Folder -Path "$env:VAGRANT_HOME\boxfiles"
     New-HomeVagrantfile
-    Invoke-Execute "vagrant" plugin install "vagrant-windows"
     Info "Installation of 'Vagrant' has finished.`n（'Vagrant'のインストールが完了しました。）"
     & "cver.bat" "Vagrant" -localonly
-    & "vagrant" plugin list
 }
 
 #
@@ -235,7 +233,6 @@ function Update-Vagrant
     Update-ChocolateyPackage -PackageName "Vagrant"
     Update-ChocolateyPackage -PackageName "7Zip"
     Update-ChocolateyPackage -PackageName "cwRsync"
-    Invoke-Execute "vagrant" plugin update "vagrant-windows"
 }
 
 #
