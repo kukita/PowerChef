@@ -83,7 +83,6 @@ PS> SetUp-ChefWorkstation -PowerChefHomePath "D:\PowerChef"
 * em-winrm [[https://github.com/opscode/em-winrm]](https://github.com/opscode/em-winrm)
 * Oracle Java Runtime [[http://java.com/en/download/]](http://java.com/en/download/)
 * Vagrant [[http://www.vagrantup.com/]](http://www.vagrantup.com/)
-* vagrant-windows [[https://github.com/WinRb/vagrant-windows]](https://github.com/WinRb/vagrant-windows)
 * 7-Zip [[http://www.7-zip.org/]](http://www.7-zip.org/)
 * CwRsync [[https://www.itefix.no/i2/cwrsync]](https://www.itefix.no/i2/cwrsync)
 * Berkshelf [[http://berkshelf.com/]](http://berkshelf.com/)

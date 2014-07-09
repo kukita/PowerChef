@@ -68,7 +68,7 @@ function Install-Chocolatey
 {
     if(!(Get-Content -Path "$PROFILE" | Select-String -Pattern "PATH.*Chocolatey" -Quiet))
     {
-        Add-Env -KeyName "PATH" -Value "`$env:SystemDrive\Chocolatey\bin"
+        Add-Env -KeyName "PATH" -Value "`$env:ProgramData\Chocolatey\bin"
     }
 
     if(Test-CanExecute -Command "chocolatey.bat")

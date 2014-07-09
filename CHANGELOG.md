@@ -1,3 +1,9 @@
+## 0.5.1 (July 10, 2014)
+
+BUG FIXES:
+
+  - Change the PATH due to specification changes 'Chocolatey'.（'Chocolatey' の仕様変更に伴い PATH を変更。）
+
 ## 0.5.0 (June 23, 2014)
 
 FEATURES:
