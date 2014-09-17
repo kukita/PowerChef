@@ -68,7 +68,7 @@
 #
 function Install-Berkshelf
 {
-    if(!(Test-CanExecute -Command "gem.bat"))
+    if(!(Test-CanExecute -Command "gem"))
     {
         Error "You must run `Install-Chef` before to install 'Berkshelf'.`n（'$Berkshelf' をインストールする前に `Install-Chef` を実行する必要があります。）"
         return
@@ -81,9 +81,9 @@ function Install-Berkshelf
     }
 
     Info "Installation of the following package is starting.`n（下記パッケージのインストールを開始します。）`n`nBerkshelf"
-    & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" install "buff-extensions" -v "0.5.0" --no-ri --no-rdoc
-    & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" install "varia_model" -v "0.3.2" --no-ri --no-rdoc
-    & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" install "berkshelf" -v "2.0.16" --no-ri --no-rdoc
+    & "$env:SystemDrive\opscode\chef\embedded\bin\gem" install "buff-extensions" -v "0.5.0" --no-ri --no-rdoc
+    & "$env:SystemDrive\opscode\chef\embedded\bin\gem" install "varia_model" -v "0.3.2" --no-ri --no-rdoc
+    & "$env:SystemDrive\opscode\chef\embedded\bin\gem" install "berkshelf" -v "2.0.16" --no-ri --no-rdoc
     if($LASTEXITCODE -ne 0)
     {
         Error "Installation of the following package is faild.`n（下記パッケージのインストールに失敗しました。）`n`nBerkshelfe`n`nExit code: $LASTEXITCODE"

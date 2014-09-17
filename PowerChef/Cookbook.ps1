@@ -269,7 +269,7 @@ function New-Cookbook
     Info "Creation of the cookbook template is starting.`n（クックブックのテンプレートの作製を開始します。）"
     Push-Location
     Set-Location -Path "$PWD\site-cookbooks"
-    Invoke-Execute "berks.bat" cookbook "$CookbookName" "--skip-vagrant" "--skip-git" "--skip-test-kitchen" "--license=$License" "--maintainer=$Maintainer" "--maintainer-email=$MaintainerEmail"
+    Invoke-Execute "berks" cookbook "$CookbookName" "--skip-vagrant" "--skip-git" "--skip-test-kitchen" "--license=$License" "--maintainer=$Maintainer" "--maintainer-email=$MaintainerEmail"
     Pop-Location
     Remove-Item -Path "$PWD\site-cookbooks\$CookbookName\README.md"
     New-CookbookReadme -CookbookName "$CookbookName" -Maintainer "$Maintainer" -MaintainerEmail "$MaintainerEmail"
@@ -790,10 +790,10 @@ function Update-Cookbook
     }
 
     Info "Uploading of the cookbook is starting.`n（クックブックのアップロードを開始します。）"
-    Invoke-Execute "berks.bat" install "--berksfile=site-cookbooks/$CookbookName/Berksfile"
-    Invoke-Execute "berks.bat" upload "--berksfile=site-cookbooks/$CookbookName/Berksfile" "--no-freeze"
+    Invoke-Execute "berks" install "--berksfile=site-cookbooks/$CookbookName/Berksfile"
+    Invoke-Execute "berks" upload "--berksfile=site-cookbooks/$CookbookName/Berksfile" "--no-freeze"
     Info "Uploading of the cookbook has finished.`n（クックブックのアップロードが完了しました。）"
-    & "knife.bat" cookbook list
+    & "knife" cookbook list
 }
 
 Set-Alias -Name "Upload-Cookbook" -Value "Update-Cookbook"

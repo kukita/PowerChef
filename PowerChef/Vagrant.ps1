@@ -181,7 +181,7 @@ function Install-Vagrant
     New-Folder -Path "$env:VAGRANT_HOME\boxfiles"
     New-HomeVagrantfile
     Info "Installation of 'Vagrant' has finished.`n（'Vagrant'のインストールが完了しました。）"
-    & "cver.bat" "Vagrant" -localonly
+    & "cver" "Vagrant" -localonly
 }
 
 #

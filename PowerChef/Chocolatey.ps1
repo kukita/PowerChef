@@ -71,10 +71,10 @@ function Install-Chocolatey
         Add-Env -KeyName "PATH" -Value "`$env:ProgramData\Chocolatey\bin"
     }
 
-    if(Test-CanExecute -Command "chocolatey.bat")
+    if(Test-CanExecute -Command "chocolatey")
     {
         Warning "'Chocolatey' is already installed.`n（'Chocolatey' は既にインストールされています。）"
-        & "cver.bat" "Chocolatey" -localonly
+        & "cver" "Chocolatey" -localonly
         return
     }
 
@@ -83,7 +83,7 @@ function Install-Chocolatey
     & "$env:TEMP\ChocolateyInstall.ps1"
     Remove-File -Path "$env:TEMP\ChocolateyInstall.ps1"
     Info "The installation of 'Chocolatey' has finished.`n（'Chocolatey' のインストールが完了しました。）"
-    & "cver.bat" "Chocolatey" -localonly
+    & "cver" "Chocolatey" -localonly
 }
 
 #
@@ -126,7 +126,7 @@ function Install-Chocolatey
 #
 function Update-Chocolatey
 {
-    if(!(Test-CanExecute -Command "cup.bat"))
+    if(!(Test-CanExecute -Command "cup"))
     {
         Error "'Chocolatey' is not installed.`n（'Chocolatey' がインストールされていません。）"
         return
@@ -174,7 +174,7 @@ function Test-IsInstalledChocolateyPackage
 
     try
     {
-        $isNotInstalledChocolateyPackage = (& "cver.bat" "$PackageName" -localonly | Select-String -Pattern "no version" -Quiet)
+        $isNotInstalledChocolateyPackage = (& "cver" "$PackageName" -localonly | Select-String -Pattern "no version" -Quiet)
     }
     catch
     {
@@ -230,7 +230,7 @@ function Install-ChocolateyPackage
         $PackageName
     )
 
-    if(!(Test-CanExecute -Command "cinst.bat"))
+    if(!(Test-CanExecute -Command "cinst"))
     {
         Error "You must run `Install-Chocolatey` before to install '$PackageName'.`n（'$PackageName' をインストールする前に `Install-Chocolatey` を実行する必要があります。）"
         return
@@ -239,14 +239,14 @@ function Install-ChocolateyPackage
     if(Test-IsInstalledChocolateyPackage -PackageName "$PackageName")
     {
         Warning "The following package is already installed.`n（下記パッケージは既にインストールされています。）`n`n$PackageName"
-        & "cver.bat" "$PackageName" -localonly
+        & "cver" "$PackageName" -localonly
         return
     }
 
     Info "Installation of the following package is starting.`n（下記パッケージのインストールを開始します。）`n`n$PackageName"
-    Invoke-Execute "cinst.bat" "$PackageName"
+    Invoke-Execute "cinst" "$PackageName"
     Info "Installation of the following package has finished.`n（下記パッケージのインストールが完了しました。）`n`n$PackageName"
-    & "cver.bat" "$PackageName" -localonly
+    & "cver" "$PackageName" -localonly
 }
 
 #
@@ -283,7 +283,7 @@ function Update-ChocolateyPackage
         $PackageName
     )
 
-    if(!(Test-CanExecute -Command "cup.bat"))
+    if(!(Test-CanExecute -Command "cup"))
     {
         Error "You must run `Install-Chocolatey` before to update '$PackageName'.`n（'$PackageName' をアップデートする前に `Install-Chocolatey` を実行する必要があります。）"
         return
@@ -296,9 +296,9 @@ function Update-ChocolateyPackage
     }
 
     Info "Update of the following package is starting.`n（下記パッケージのアップデートを開始します。）`n`n$PackageName"
-    Invoke-Execute "cup.bat" "$PackageName"
+    Invoke-Execute "cup" "$PackageName"
     Info "Update of the following package has finished.`n（下記パッケージのアップデートが完了しました。）`n`n$PackageName"
-    & "cver.bat" "$PackageName" -localonly
+    & "cver" "$PackageName" -localonly
 }
 
 # SIG # Begin signature block

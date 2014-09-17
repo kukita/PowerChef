@@ -1,3 +1,9 @@
+## 0.5.2 (September 18, 2014)
+
+BUG FIXES:
+
+  - Removed the extension ".bat".（拡張子 ".bat" を除去。）
+
 ## 0.5.1 (July 10, 2014)
 
 BUG FIXES:

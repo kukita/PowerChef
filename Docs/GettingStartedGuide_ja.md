@@ -248,7 +248,7 @@ PS> New-ChefZeroACL
 
 ```ps1
 PS> Update-Cookbook "role-as-webserver"
-PS> & knife.bat cookbook list
+PS> & knife cookbook list
 ```
 
 → クックブックの一覧が表示されれば成功です。
@@ -302,7 +302,7 @@ PS> SetUp-ChefNode "WebServer-192-168-56-10"
 ### 手順 6-6: knife コマンドを使って、Chef Zero サーバー上に Node として登録されたことを確認します
 
 ```ps1
-PS> & knife.bat node list
+PS> & knife node list
 WebServer-192-168-56-10
 ```
 
@@ -315,8 +315,8 @@ WebServer-192-168-56-10
 ### 手順 7-1: knife コマンドを使って run_list に作成したクックブックを追加します
 
 ```ps1
-PS> & knife.bat node run_list add "WebServer-192-168-56-10" "role-as-webserver::default"
-PS> & knife.bat node show "WebServer-192-168-56-10"
+PS> & knife node run_list add "WebServer-192-168-56-10" "role-as-webserver::default"
+PS> & knife node show "WebServer-192-168-56-10"
 ```
 
 ### 手順 7-2: Environment の設定ファイル `development.json` を作成します
@@ -344,7 +344,7 @@ PS> New-Item -Path ".\environments\development.json" -ItemType "File" -Value @'
 ### 手順 7-3: knife コマンドを使って、 Environment を設定します
 
 ```ps1
-PS> & knife.bat environment create from file ".\environments\development.json"
+PS> & knife environment create from file ".\environments\development.json"
 ```
 
 ### 手順 7-4: `Converge-ChefNode` ファンクションを使って、クックブックを Node に適用します（Node 上で chef-client を実行します）

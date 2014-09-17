@@ -170,7 +170,7 @@ function Test-IsInstalledChefGemPackage
 
     try
     {
-        $isInstalledChefGemPackage = (& "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" list --local | Select-String -Pattern "^$PackageName " -Quiet)
+        $isInstalledChefGemPackage = (& "$env:SystemDrive\opscode\chef\embedded\bin\gem" list --local | Select-String -Pattern "^$PackageName " -Quiet)
     }
     catch
     {
@@ -215,7 +215,7 @@ function Install-ChefGemPackage
         $PackageName
     )
 
-    if(!(Test-CanExecute -Command "gem.bat"))
+    if(!(Test-CanExecute -Command "gem"))
     {
         Error "You must run `Install-Chef` before to install '$PackageName'.`n（'$PackageName' をインストールする前に `Install-Chef` を実行する必要があります。）"
         return
@@ -228,7 +228,7 @@ function Install-ChefGemPackage
     }
 
     Info "Installation of the following package is starting.`n（下記パッケージのインストールを開始します。）`n`n$PackageName"
-    & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" install "$PackageName" --no-ri --no-rdoc
+    & "$env:SystemDrive\opscode\chef\embedded\bin\gem" install "$PackageName" --no-ri --no-rdoc
     if($LASTEXITCODE -ne 0)
     {
         Error "Installation of the following package is faild.`n（下記パッケージのインストールに失敗しました。）`n`n$PackageName`n`nExit code: $LASTEXITCODE"
@@ -272,7 +272,7 @@ function Update-ChefGemPackage
         $PackageName
     )
 
-    if(!(Test-CanExecute -Command "gem.bat"))
+    if(!(Test-CanExecute -Command "gem"))
     {
         Error "You must run `Install-Chef` before to update '$PackageName'.`n（'$PackageName' をアップデートする前に `Install-Chef` を実行する必要があります。）"
         return
@@ -285,7 +285,7 @@ function Update-ChefGemPackage
     }
 
     Info "Update of the following package is starting.`n（下記パッケージのアップデートを開始します。）`n`n$PackageName"
-    & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" update "$PackageName" --no-ri --no-rdoc
+    & "$env:SystemDrive\opscode\chef\embedded\bin\gem" update "$PackageName" --no-ri --no-rdoc
     if($LASTEXITCODE -ne 0)
     {
         Error "Update of the following package is faild.`n（下記パッケージのアップデートに失敗しました。）`n`n$PackageName`n`nExit code: $LASTEXITCODE"
@@ -408,7 +408,7 @@ function Start-ChefZero
     Info "Running of 'Chef Zero' is starting.`n（'Chef Zero' の起動を開始します。）"
     try
     {
-        Start-Process -FilePath "$env:SystemDrive\opscode\chef\bin\chef-zero.bat" -ArgumentList "-H 0.0.0.0 -p 8889" -Verb "runas" -WindowStyle "Minimized"
+        Start-Process -FilePath "$env:SystemDrive\opscode\chef\bin\chef-zero" -ArgumentList "-H 0.0.0.0 -p 8889" -Verb "runas" -WindowStyle "Minimized"
     }
     catch
     {

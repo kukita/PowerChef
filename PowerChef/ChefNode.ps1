@@ -1324,11 +1324,11 @@ function Install-ChefNode
             Invoke-Command -Session $PSSession -ScriptBlock {Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://chocolatey.org/install.ps1")}
 
             Info "Installing 'Chef' on the following machine.`n（下記マシン上で 'Chef' をインストールしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-            Invoke-Command -Session $PSSession -ScriptBlock {& $env:SystemDrive\chocolatey\bin\cinst.bat "chef-client"}
+            Invoke-Command -Session $PSSession -ScriptBlock {& $env:SystemDrive\chocolatey\bin\cinst "chef-client"}
             Invoke-Command -Session $PSSession -ScriptBlock {$env:Path = "$env:SystemDrive\opscode\chef\bin;$env:Path"}
 
             Info "Creating 'C:\chef\client.rb' on the following machine.`n（下記マシン上で 'C:\chef\client.rb' を作成しています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-            Invoke-Command -Session $PSSession -ScriptBlock {& knife.bat configure client -s "$ChefServerURL" "C:\chef\"}
+            Invoke-Command -Session $PSSession -ScriptBlock {& knife configure client -s "$ChefServerURL" "C:\chef\"}
             Invoke-Command -Session $PSSession -ScriptBlock {Add-Content -Path "C:\chef\client.rb" -Value "node_name '$args'"} -ArgumentList "$NodeName"
             Invoke-Command -Session $PSSession -ScriptBlock {Add-Content -Path "C:\chef\client.rb" -Value "environment '$args'"} -ArgumentList "$Environment"
 
@@ -1337,7 +1337,7 @@ function Install-ChefNode
             Invoke-Command -Session $PSSession -ScriptBlock {New-Item -Path "C:\chef\validation.pem" -ItemType "File" -Value "$args"} -ArgumentList "$pemContent"
 
             Info "Registering as 'Chef Node' on the following machine.`n（下記マシン上で 'Chef Node' の登録を行っています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-            Invoke-Command -Session $PSSession -ScriptBlock {& chef-client.bat -c "C:\chef\client.rb"}
+            Invoke-Command -Session $PSSession -ScriptBlock {& chef-client -c "C:\chef\client.rb"}
 
             Info "Disconnection to the following machine is starting.`n（下記マシンとの切断を開始します。）`n`nNode name: $NodeName`nIP address: $IPAddress"
             try
@@ -1518,7 +1518,7 @@ function Update-ChefNode
         "Windows"
         {
             $PSSession = New-PSSession -ComputerName "$IPAddress" -Credential "$UserName"
-            Invoke-Command -Session $PSSession -ScriptBlock {C:\opscode\chef\bin\chef-client.bat -c "C:\chef\client.rb"}
+            Invoke-Command -Session $PSSession -ScriptBlock {C:\opscode\chef\bin\chef-client -c "C:\chef\client.rb"}
             Remove-PSSession -Session $PSSession
         }
         default
@@ -1654,7 +1654,7 @@ function Test-ChefNode
 
     Push-Location
     Set-Location -Path "$nodeFolderPath"
-    Invoke-Execute "rake.bat" spec
+    Invoke-Execute "rake" spec
     Pop-Location
 }
 
