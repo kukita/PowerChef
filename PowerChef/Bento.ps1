@@ -93,7 +93,7 @@ function Install-Bento
     }
     Push-Location
     Set-Location -Path "$env:POWERCHEF_HOME\bento"
-    & "bundle " install "--path" "vendor/bundle" "--binstubs"
+    & bundle install "--path" "vendor/bundle" "--binstubs"
     Pop-Location
     Install-ChefGemPackage -PackageName "em-winrm"
     Install-ChocolateyPackage -PackageName "JavaRuntime"
