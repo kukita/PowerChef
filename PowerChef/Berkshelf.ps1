@@ -68,12 +68,6 @@
 #
 function Install-Berkshelf
 {
-    if(Test-IsInstalledChefGemPackage -PackageName "berkshelf")
-    {
-        Warning "The following package is already installed.`n（下記パッケージは既にインストールされています。）`n`nBerkshelf"
-        return
-    }
-
     Info "Installation of the following package is starting.`n（下記パッケージのインストールを開始します。）`n`nBerkshelf"
     & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" install "buff-extensions" -v "0.5.0" --no-ri --no-rdoc
     & "$env:SystemDrive\opscode\chef\embedded\bin\gem.bat" install "varia_model" -v "0.3.2" --no-ri --no-rdoc
