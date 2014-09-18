@@ -503,6 +503,10 @@ Vagrant.configure('2') do |config|
     node.vm.provider :virtualbox do |vb|
       vb.name = '$NodeName'
       vb.gui = true
+      vb.customize ['modifyvm', :id, '--nictype1', '82545EM']
+      vb.customize ['modifyvm', :id, '--nictype2', '82545EM']
+      vb.customize ['modifyvm', :id, '--nictype3', '82545EM']
+      vb.customize ['modifyvm', :id, '--nictype4', '82545EM']
     end
   end
 end
@@ -519,6 +523,10 @@ Vagrant.configure('2') do |config|
     node.vm.provider :virtualbox do |vb|
       vb.name = '$NodeName'
       vb.gui = false
+      vb.customize ['modifyvm', :id, '--nictype1', 'virtio']
+      vb.customize ['modifyvm', :id, '--nictype2', 'virtio']
+      vb.customize ['modifyvm', :id, '--nictype3', 'virtio']
+      vb.customize ['modifyvm', :id, '--nictype4', 'virtio']
     end
   end
 end
