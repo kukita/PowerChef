@@ -161,7 +161,7 @@ function Update-Bento
     Info "Update of 'Bento' is starting.`n（'Bento' のアップデートを開始します。）"
     Push-Location
     Set-Location -Path "$env:POWERCHEF_HOME\bento"
-    Invoke-Execute "bundle " update
+    Invoke-Execute bundle update
     Pop-Location
     Update-ChefGemPackage -PackageName "em-winrm"
     Update-ChocolateyPackage -PackageName "JavaRuntime"
@@ -288,7 +288,7 @@ function Invoke-VeeweeVboxBuild
     {
         Push-Location
         Set-Location -Path "$env:POWERCHEF_HOME\bento"
-        Invoke-Execute "bundle " exec veewee vbox build "$Name"
+        Invoke-Execute bundle exec veewee vbox build "$Name"
         Pop-Location
     }
     catch
