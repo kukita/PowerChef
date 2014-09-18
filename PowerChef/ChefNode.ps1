@@ -501,7 +501,6 @@ Vagrant.configure('2') do |config|
     node.vm.hostname = '$NodeName'
     node.vm.network 'private_network', ip: '192.168.56.$VMNumber'
     node.vm.provider :virtualbox do |vb|
-      vb.name = '$NodeName'
       vb.gui = true
       vb.customize ['modifyvm', :id, '--nictype1', '82545EM']
       vb.customize ['modifyvm', :id, '--nictype2', '82545EM']
@@ -521,7 +520,6 @@ Vagrant.configure('2') do |config|
     node.vm.hostname = '$NodeName'
     node.vm.network 'private_network', ip: '192.168.56.$VMNumber'
     node.vm.provider :virtualbox do |vb|
-      vb.name = '$NodeName'
       vb.gui = false
       vb.customize ['modifyvm', :id, '--nictype1', 'virtio']
       vb.customize ['modifyvm', :id, '--nictype2', 'virtio']
