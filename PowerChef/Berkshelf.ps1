@@ -68,12 +68,6 @@
 #
 function Install-Berkshelf
 {
-    if(!(Test-CanExecute -Command "gem.bat"))
-    {
-        Error "You must run `Install-Chef` before to install 'Berkshelf'.`n（'$Berkshelf' をインストールする前に `Install-Chef` を実行する必要があります。）"
-        return
-    }
-
     if(Test-IsInstalledChefGemPackage -PackageName "berkshelf")
     {
         Warning "The following package is already installed.`n（下記パッケージは既にインストールされています。）`n`nBerkshelf"
