@@ -1330,7 +1330,7 @@ function Install-ChefNode
             Invoke-Command -Session $PSSession -ScriptBlock {Invoke-Expression (New-Object System.Net.WebClient).DownloadString("https://chocolatey.org/install.ps1")}
 
             Info "Installing 'Chef' on the following machine.`n（下記マシン上で 'Chef' をインストールしています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
-            Invoke-Command -Session $PSSession -ScriptBlock {& $env:SystemDrive\chocolatey\bin\cinst "chef-client"}
+            Invoke-Command -Session $PSSession -ScriptBlock {& $env:SystemDrive\ProgramData\chocolatey\bin\cinst "chef-client"}
             Invoke-Command -Session $PSSession -ScriptBlock {$env:Path = "$env:SystemDrive\opscode\chef\bin;$env:Path"}
 
             Info "Creating 'C:\chef\client.rb' on the following machine.`n（下記マシン上で 'C:\chef\client.rb' を作成しています。）`n`nNode name: $NodeName`nIP address: $IPAddress"
